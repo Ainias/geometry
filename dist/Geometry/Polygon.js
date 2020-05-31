@@ -150,6 +150,9 @@ class Polygon {
         });
         return Object.keys(unionPairs).filter(i => mapping[i] === undefined).map(i => arrayOfPolygons[i].removeUnnecessaryPoints());
     }
+    static rect(p1, p2) {
+        return new Polygon([p1.copy(), p1.copy().setY(p2.y), p2.copy(), p1.copy().setX(p2.x)]);
+    }
 }
 exports.Polygon = Polygon;
 //# sourceMappingURL=Polygon.js.map
