@@ -11,4 +11,7 @@ export declare class Line {
     containsPoint(p: any): boolean;
     getIntersectionPointsWith(other: any): any[];
     getVector(): Point;
+    combine(other: any): any[];
+    getCenter(): Point;
+    static combineArrays(lines: any, linesOther: any): any;
 }

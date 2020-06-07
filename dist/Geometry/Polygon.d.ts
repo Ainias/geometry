@@ -10,7 +10,7 @@ export declare class Polygon {
     removeUnnecessaryPoints(): this;
     union(...others: any[]): any;
     setminus(other: any): any;
-    intersection(others: any): any;
+    intersection(...others: any[]): any;
     static arrayUnion(arrayOfPolygons: any): any[];
     static rect(p1: any, p2: any): Polygon;
 }

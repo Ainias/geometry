@@ -1,6 +1,7 @@
 import {Point} from "./Point";
 import {Helper} from "js-helper/dist/shared/Helper";
 import {Line} from "./Line";
+import {Random} from "js-helper/dist/shared/Random";
 
 export class Face {
 
@@ -15,8 +16,8 @@ export class Face {
         this.setPoints(points);
     }
 
-    setPoints(points){
-        if (points.length === 0){
+    setPoints(points) {
+        if (points.length === 0) {
             this._points = [];
             return;
         }
@@ -25,23 +26,23 @@ export class Face {
         let smallestPoint = null;
 
         points.forEach((p, i) => {
-            if (smallestPoint === null || p.x < smallestPoint.x || (p.x === smallestPoint.x && p.y < smallestPoint.y)){
+            if (smallestPoint === null || p.x < smallestPoint.x || (p.x === smallestPoint.x && p.y < smallestPoint.y)) {
                 smallestPoint = p;
                 smallestIndex = i;
             }
         });
 
-        let indexBefore = (smallestIndex-1+points.length)%points.length;
-        let indexAfter = (smallestIndex+1)%points.length;
+        let indexBefore = (smallestIndex - 1 + points.length) % points.length;
+        let indexAfter = (smallestIndex + 1) % points.length;
 
         let hasToReverse = false;
-        if (points[indexBefore].x < points[indexAfter].x || (points[indexBefore].x === points[indexAfter].x && points[indexBefore].y < points[indexAfter].y)){
+        if (points[indexBefore].x < points[indexAfter].x || (points[indexBefore].x === points[indexAfter].x && points[indexBefore].y < points[indexAfter].y)) {
             smallestIndex++;
             hasToReverse = true;
         }
 
-        points.push(...points.splice(0,smallestIndex));
-        if (hasToReverse){
+        points.push(...points.splice(0, smallestIndex));
+        if (hasToReverse) {
             points = points.reverse();
         }
         this._points = points;
@@ -80,26 +81,37 @@ export class Face {
         return newFaces;
     }
 
-    containsPoint(point) {
+    containsPoint(point, lineStartingPoint?) {
         let min = Point.min(...this._points);
         let max = Point.max(...this._points);
 
         if (point.x < min.x || point.y < min.y || point.x > max.x || point.y > max.y) {
             return false;
         }
-        let line = new Line(new Point(min.x, point.y), point);
+
+        lineStartingPoint = Helper.nonNull(lineStartingPoint, new Point(min.x - 1, point.y))
 
         let count = 0;
-        this.getLines().some(l => {
-            if (l.containsPoint(point)) {
-                count = 1;
-                return true;
+        let repeat = false;
+        do {
+            repeat = false;
+            count = 0;
+            let line = new Line(lineStartingPoint, point);
+            let lines = this.getLines();
+            for (let i = 0, n = lines.length; i < n; i++) {
+                let l = lines[i];
+                if (l.containsPoint(point)) {
+                    return true;
+                }
+                let newIntersectionPoints = line.getIntersectionPointsWith(l);
+                if (newIntersectionPoints.length === 1 && (newIntersectionPoints[0].equals(l.p1) || newIntersectionPoints[0].equals(l.p2))) {
+                    repeat = true;
+                    lineStartingPoint.add(new Point(0, Random.getRandom() * Math.max(l.length(), 1)))
+                    break;
+                }
+                count += newIntersectionPoints.length;
             }
-            if (line.getIntersectionPointsWith(l).length > 0) {
-                count++;
-            }
-            return false;
-        });
+        } while (repeat === true);
         return count % 2 === 1;
     }
 
@@ -117,12 +129,12 @@ export class Face {
         return Face.COLLISION_INTERSECTS;
     }
 
-    removeUnnecessaryPoints(){
+    removeUnnecessaryPoints() {
         let lines = this.getLines();
         let points = [];
         lines.forEach((l, i) => {
-            let nextLine = lines[(i+1)%lines.length];
-            if (nextLine.getGradient() !== l.getGradient()){
+            let nextLine = lines[(i + 1) % lines.length];
+            if (nextLine.getGradient() !== l.getGradient()) {
                 points.push(l.p2);
             }
         });
@@ -147,52 +159,18 @@ export class Face {
         let points = one.getPoints();
         let pointsOther = another.getPoints();
 
-        //calculate startingPoint
-        let reference = Point.min(...points, ...pointsOther);
-
         let lines = [];
-        let possibleStartingPoints = [];
         points.forEach((p, i, points) => {
             let nextPoint = points[(i + 1) % points.length];
             let lineMiddle = p.copy().add(nextPoint.copy().substract(p).multiply(0.5));
             if (!another.containsPoint(lineMiddle)) {
-                possibleStartingPoints.push(lineMiddle);
                 lines.push(new Line(p, nextPoint));
             }
         });
 
         //Touching and therefore has intersection points, but this is fully in other
-        if (possibleStartingPoints.length === 0) {
+        if (lines.length === 0) {
             return [];
-        }
-
-        let startingPointIndex = null;
-        let smallestLength = null;
-
-        possibleStartingPoints.forEach((p, i) => {
-            let length = new Line(p, reference).length();
-            if (smallestLength === null || length < smallestLength) {
-                smallestLength = length;
-                startingPointIndex = i;
-            }
-        });
-
-        let startingPoint = possibleStartingPoints[startingPointIndex];
-        let removedLine = lines.splice(startingPointIndex,1)[0];
-        lines.push(new Line(removedLine.p1, startingPoint))
-        lines.push(new Line(startingPoint, removedLine.p2));
-
-        if (removedLine.p1.x !== removedLine.p2.x){
-            reference = startingPoint.copy().substract(1,0);
-            if (one.containsPoint(reference)){
-                reference = startingPoint.copy().add(1,0);
-            }
-        }
-        else {
-            reference = startingPoint.copy().substract(0,1);
-            if (one.containsPoint(reference)){
-                reference = startingPoint.copy().add(0,1);
-            }
         }
 
         pointsOther.forEach((p, i, points) => {
@@ -201,12 +179,40 @@ export class Face {
                 lines.push(new Line(p, otherPoint));
             }
         })
-        // pointsOther.forEach(_pointCallback);
 
         let newFaces = [];
         while (lines.length > 0) {
-            //loop through points until outline done
-            let currentPoint = startingPoint;
+            //calculate starting points
+            let currentPoint = null;
+            let reference = null;
+            lines.some((l, i) => {
+                let lineMiddle = l.p1.copy().add(l.getVector().multiply(0.5));
+                if (!other.containsPoint(lineMiddle)) {
+                    lines.splice(i, 1);
+                    lines.push(new Line(l.p1, lineMiddle));
+                    lines.push(new Line(lineMiddle, l.p2));
+
+                    currentPoint = lineMiddle;
+
+                    if (l.p1.x === l.p2.x) {
+                        reference = lineMiddle.copy().substract(1, 0);
+                        if (one.containsPoint(reference)) {
+                            reference = lineMiddle.copy().add(1, 0);
+                        }
+                    } else {
+                        reference = lineMiddle.copy().substract(0, 1);
+                        if (one.containsPoint(reference)) {
+                            reference = lineMiddle.copy().add(0, 1);
+                        }
+                    }
+                    return true;
+                }
+            })
+            if (currentPoint === null) {
+                break;
+            }
+
+            let startingPoint = currentPoint;
             let line = new Line(reference, currentPoint);
             let newPoints = [];
             do {
@@ -232,7 +238,10 @@ export class Face {
 
             } while (currentPoint !== startingPoint);
             if (newPoints.length > 0) {
-                newFaces.push(new Face(...newPoints).removeUnnecessaryPoints());
+                let newFace = new Face(...newPoints).removeUnnecessaryPoints();
+                if (newFace.getPoints().length > 0) {
+                    newFaces.push(newFace);
+                }
             }
         }
 
@@ -381,6 +390,54 @@ export class Face {
         return resultFaces;
     }
 
+    cutLines(lines) {
+        let myLines = this.getLines();
+        let intersections = {};
+        lines.forEach((l1, i) => {
+            myLines.forEach((l2) => {
+                let points = l1.getIntersectionPointsWith(l2);
+                points.forEach(p => {
+                    intersections[i] = Helper.nonNull(intersections[i], []);
+                    let intersectionObject = {
+                        i: i,
+                        p: p,
+                    };
+
+                    intersections[i].push(intersectionObject);
+                });
+            });
+        });
+
+        //integrate intersections into points
+        let newLines = [];
+        lines.forEach((line, index) => {
+            let currentStartPoint = line.p1;
+            if (intersections[index]) {
+                //add last point such that the last line is also added
+                intersections[index].push({i: -1, p: line.p2});
+                intersections[index].sort((a, b) => {
+                    return new Line(currentStartPoint, a.p).length() - new Line(currentStartPoint, b.p).length();
+                }).forEach(i => {
+                    if (!i.p.equals(currentStartPoint)) {
+                        newLines.push(new Line(currentStartPoint, i.p));
+                        currentStartPoint = i.p;
+                    }
+                });
+            } else {
+                newLines.push(line);
+            }
+        });
+        return newLines;
+    }
+
+    cutLinesOutside(lines) {
+        return this.cutLines(lines).filter(l => !this.containsPoint(l.getCenter()));
+    }
+
+    cutLinesWithin(lines) {
+        return this.cutLines(lines).filter(l => this.containsPoint(l.getCenter()));
+    }
+
     static rect(p1, p2) {
         return new Face(p1.copy(), p1.copy().setY(p2.y), p2.copy(), p1.copy().setX(p2.x));
     }
@@ -399,6 +456,10 @@ export class Face {
             }
 
             let angle = 2 * Math.PI - Point.angleOf(inVector, outVector)
+            if (isNaN(angle)) {
+                debugger;
+                Point.angleOf(inVector, outVector);
+            }
             if (inVector.crossProduct(outVector) < 0) {
                 angle = 2 * Math.PI - angle;
             }

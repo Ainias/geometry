@@ -15,7 +15,7 @@ export class Line {
         return this.p1.copy().substract(this.p2).length();
     }
 
-    getGradient(){
+    getGradient() {
         return this._gradient;
     }
 
@@ -32,21 +32,24 @@ export class Line {
         }
     }
 
-    equals(other, direction){
+    equals(other, direction) {
         direction = Helper.nonNull(direction, true);
         return (this.p1.equals(other.p1) && this.p2.equals(other.p2)) || (!direction && this.p1.equals(other.p2) && this.p2.equals(other.p1))
     }
 
     containsPoint(p) {
         let diff = p.copy().substract(this.p1);
+        let diffLine = this.p2.copy().substract(this.p1);
         if (this._gradient === Infinity) {
             if (diff.x !== 0) {
                 return false;
             }
+        } else if (this._gradient === 0) {
+             return (diff.y === 0 && ((p.x >= this.p1.x && p.x <= this.p2.x) || (p.x <= this.p1.x && p.x >= this.p2.x)));
         } else if (this.p1.y + diff.x * this._gradient !== p.y) {
             return false;
         }
-        let diffY = this.p2.y - this.p1.y;
+        let diffY = diffLine.y;
         return ((diffY <= 0 && diff.y <= 0) || ((diffY >= 0 && diff.y >= 0))) && Math.abs(diffY) >= Math.abs(diff.y);
     }
 
@@ -87,7 +90,7 @@ export class Line {
                 }
             }
             return points;
-        } else if (diffCross2 !== 0) {
+        } else {
             let factor1 = diffCross1 / vectorCross1; //t
             let factor2 = diffCross2 / vectorCross1; //s
 
@@ -100,5 +103,44 @@ export class Line {
 
     getVector() {
         return this.p2.copy().substract(this.p1)
+    }
+
+    combine(other){
+        if (Math.abs(other._gradient) !== Math.abs(this._gradient)){
+            return [this, other];
+        }
+
+        let intersectionPoints = this.getIntersectionPointsWith(other);
+        if (intersectionPoints.length > 0){
+            //Should be exactly 2
+            let points = [other.p1, other.p2, this.p1, this.p2].filter(p => Point.indexOf(intersectionPoints, p) !== -1);
+            return [new Line(points[0], points[1])];
+        }
+        else {
+            return [this, other];
+        }
+    }
+
+    getCenter(){
+        return this.p1.copy().add(this.getVector().divide(2));
+    }
+
+    static combineArrays(lines, linesOther){
+        let oldLines = linesOther;
+        lines.forEach(line => {
+            let newLines = [];
+            oldLines.forEach(l => {
+                let combinedLines = line.combine(l);
+                if (combinedLines.length === 1){
+                    line = combinedLines[0];
+                }
+                else {
+                    newLines.push(combinedLines[1]);
+                }
+            });
+            newLines.push(line);
+            oldLines = newLines;
+        });
+        return oldLines;
     }
 }

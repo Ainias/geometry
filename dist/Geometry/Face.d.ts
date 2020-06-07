@@ -10,12 +10,15 @@ export declare class Face {
     getPoints(): any;
     getLastPoint(): any;
     split(): any[];
-    containsPoint(point: any): boolean;
+    containsPoint(point: any, lineStartingPoint?: any): boolean;
     checkCollision(otherFace: any): number;
     removeUnnecessaryPoints(): this;
     setminus(other: any): any[];
     union(...other: any[]): any;
     intersection(...other: any[]): any;
+    cutLines(lines: any): any[];
+    cutLinesOutside(lines: any): any[];
+    cutLinesWithin(lines: any): any[];
     static rect(p1: any, p2: any): Face;
     static _getNextPoint(inVector: any, referencePoint: any, points: any, useSmallestAngle?: any): any;
     static _getFacesWithIntersectionPoints(one: any, another: any): any[];

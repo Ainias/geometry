@@ -269,11 +269,9 @@ class Point {
         return index;
     }
     static angleOf(p1, p2) {
-        let divider = (p1.length() * p2.length());
-        if (divider === 0) {
-            return null;
-        }
-        return Math.acos(p1.scalarProduct(p2) / divider);
+        const accuracy = 10000000000;
+        let scalarProduct = Math.round((p1.copy().normalize().scalarProduct(p2.copy().normalize())) * accuracy) / accuracy;
+        return Math.acos(scalarProduct);
     }
 }
 exports.Point = Point;

@@ -1,7 +1,86 @@
 import {Point} from "../../src/Geometry/Point";
 import {Face} from "../../src/Geometry/Face";
+import {Polygon} from "../../src/Geometry/Polygon";
+import {Line} from "../../src/Geometry/Line";
 
 describe('face', () => {
+    it('containsPoint 1', () => {
+        let face = Face.rect(new Point(10, 10), new Point(20, 20))
+        let point = new Point(15,15);
+
+        expect(face.containsPoint(point)).toBe(true);
+    })
+
+    it('containsPoint 2', () => {
+        let face = Face.rect(new Point(10, 10), new Point(20, 20))
+        let point = new Point(10,15);
+
+        expect(face.containsPoint(point)).toBe(true);
+    })
+
+    it('containsPoint 2', () => {
+        let face = Face.rect(new Point(10, 10), new Point(20, 20))
+        let point = new Point(10,10);
+
+        expect(face.containsPoint(point)).toBe(true);
+    })
+
+    it('containsPoint 2', () => {
+        let face = Face.rect(new Point(10, 10), new Point(20, 20))
+        let point = new Point(15,20);
+
+        expect(face.containsPoint(point)).toBe(true);
+    })
+
+    it('containsPoint 2', () => {
+        let face = Face.rect(new Point(10, 10), new Point(20, 20))
+        let point = new Point(20,20);
+
+        expect(face.containsPoint(point)).toBe(true);
+    })
+
+    it('containsPoint 2', () => {
+        let face = Face.rect(new Point(10, 10), new Point(20, 20))
+        let point = new Point(5,5);
+
+        expect(face.containsPoint(point)).toBe(false);
+    })
+
+    it('containsPoint 2', () => {
+        let face = Face.rect(new Point(10, 10), new Point(20, 20))
+        let point = new Point(25,25);
+
+        expect(face.containsPoint(point)).toBe(false);
+    })
+
+    it('containsPoint 2', () => {
+        let face = Face.rect(new Point(10, 10), new Point(20, 20))
+        let point = new Point(15,5);
+
+        expect(face.containsPoint(point)).toBe(false);
+    })
+
+    it('containsPoint 2', () => {
+        let face = Face.rect(new Point(10, 10), new Point(20, 20))
+        let point = new Point(5,15);
+
+        expect(face.containsPoint(point)).toBe(false);
+    })
+
+    it('containsPoint 2', () => {
+        let face = Face.rect(new Point(10, 10), new Point(20, 20))
+        let point = new Point(10,5);
+
+        expect(face.containsPoint(point)).toBe(false);
+    })
+
+    it('containsPoint 2', () => {
+        let face = Face.rect(new Point(10, 10), new Point(20, 20))
+        let point = new Point(5,10);
+
+        expect(face.containsPoint(point)).toBe(false);
+    })
+
     it('union1', () => {
         let face1 = Face.rect(new Point(10, 10), new Point(20, 20))
         let face2 = Face.rect(new Point(15, 15), new Point(25, 25))
@@ -78,6 +157,48 @@ describe('face', () => {
         expect(union.length).toBe(2);
         // expect(union[0]).toBeInstanceOf(Face);
         // expect(union[0].getPoints()).toEqual([new Point(10, 10), new Point(10, 20), new Point(15, 20), new Point(15, 25), new Point(25, 25), new Point(25, 15), new Point(20, 15), new Point(20, 10)]);
+    })
+
+    it("union 8", () => {
+        let face1 = new Face(new Point(70, 35), new Point(70, 105), new Point(210, 35));
+        let face2 = new Face(new Point(35, 70), new Point(105, 0), new Point(140, 70));
+
+        let unions = face2.union(face1);
+
+        expect(unions.length).toBe(1);
+        expect(unions[0]).toBeInstanceOf(Face);
+        expect(unions[0].getPoints()).toEqual([new Point(35,70), new Point(70,70), new Point(70,105), new Point(210,35), new Point(122.5, 35), new Point(105,0)])
+    });
+
+    it ("union 9", () => {
+        let face1 = new Face(new Point(35,35) , new Point(105,105) , new Point(175,35));
+        let face2 = new Face(new Point(70,70) , new Point(105,0) , new Point(140,70));
+
+        let unions = face2.union(face1);
+
+        expect(unions.length).toBe(1);
+        expect(unions[0]).toBeInstanceOf(Face);
+        expect(unions[0].getPoints()).toEqual([new Point(35,35), new Point(87.5,35), new Point(105,0), new Point(122.5,35), new Point(175, 35), new Point(105,105)])
+    })
+
+    it ("union 10", () => {
+        let face1 = new Face(new Point(35,35) , new Point(35,210) , new Point(210,35));
+        let face2 = new Face(new Point(0,210) , new Point(105,0) , new Point(175,175));
+
+        let union = face2.union(face1);
+        expect(union.length).toBe(1);
+        expect(union[0]).toBeInstanceOf(Face);
+    })
+
+    it ("union 11", () => {
+        let face1 = new Face(...[new Point(210, 595), new Point(525, 35), new Point(805, 103.65384615384616), new Point(945, 350),  new Point(770, 595)]);
+        let face2 = new Face(...[new Point(140, 35), new Point(140, 595), new Point(945, 595), new Point(945, 245), new Point(945, 35)]);
+
+        let union = face2.union(face1);
+
+        expect(union.length).toBe(1);
+        expect(union[0]).toBeInstanceOf(Face);
+        expect(union[0].getPoints()).toEqual([new Point(140, 35), new Point(140, 595), new Point(945, 595), new Point(945, 35)])
     })
 
     it('intersection simple overlapping', () => {
@@ -203,6 +324,29 @@ describe('face', () => {
         expect(setminus[0]).toBeInstanceOf(Face);
         expect(setminus[0].getPoints()).toEqual([new Point(5, 5), new Point(5, 15), new Point(15, 15), new Point(15, 20), new Point(25, 20), new Point(25, 0), new Point(15, 0), new Point(15, 5)]);
     })
+
+    it('setminus 1', () => {
+        let face1 = new Face(new Point(0, 0), new Point(0, 10), new Point(5, 10), new Point(5, 15), new Point(15, 15), new Point(15, 5), new Point(10, 5), new Point(10, 0));
+        let face2 = Face.rect(new Point(0, 0), new Point(10, 10))
+
+        let setminus = face1.setminus(face2);
+
+        expect(setminus.length).toBe(1);
+        expect(setminus[0]).toBeInstanceOf(Face);
+        expect(setminus[0].getPoints()).toEqual([new Point(5, 10), new Point(5, 15), new Point(15, 15), new Point(15, 5), new Point(10, 5), new Point(10, 10)]);
+    })
+
+    it('setminus 2', () => {
+        let face1 = Face.rect(new Point(0, 0), new Point(20, 15))
+        let face2 = new Face(new Point(0, 0), new Point(0, 15), new Point(5, 15), new Point(5,5), new Point(15, 5), new Point(15, 15), new Point(20,15), new Point(20, 0));
+
+        let setminus = face1.setminus(face2);
+
+        expect(setminus.length).toBe(1);
+        expect(setminus[0]).toBeInstanceOf(Face);
+        expect(setminus[0].getPoints()).toEqual([new Point(5, 5), new Point(5, 15), new Point(15, 15), new Point(15, 5)]);
+    })
+
     it('setminus line outside, but points inside', () => {
         let face1 = new Face(new Point(5, 10), new Point(10, 10), new Point(20, 20), new Point(20, 25), new Point(5, 25));
         let face2 = new Face(new Point(0, 0), new Point(10, 0), new Point(10, 20), new Point(30, 20), new Point(30, 30), new Point(0, 30));
@@ -212,5 +356,33 @@ describe('face', () => {
         expect(setminus.length).toBe(1);
         expect(setminus[0]).toBeInstanceOf(Face);
         expect(setminus[0].getPoints()).toEqual([new Point(10, 10), new Point(10, 20), new Point(20, 20)]);
+    })
+
+    it('setminus with multiple faces as result', () => {
+        let face1 = Face.rect(new Point(10, 10), new Point(40, 40));
+        let face2 = Face.rect(new Point(20, 5), new Point(30,45));
+
+        let setminus = face1.setminus(face2);
+
+        expect(setminus.length).toBe(2);
+        expect(setminus[0]).toBeInstanceOf(Face);
+        expect(setminus[1]).toBeInstanceOf(Face);
+        expect(setminus[0].getPoints()).toEqual([new Point(10,10), new Point(10,40), new Point(20,40), new Point(20,10)])
+        expect(setminus[1].getPoints()).toEqual([new Point(30,10), new Point(30,40), new Point(40,40), new Point(40,10)])
+    })
+
+    it('cut lines', () => {
+        let face = Face.rect(new Point(10, 0), new Point(40, 40));
+        let line = new Line(new Point(0,5), new Point(45,5))
+
+        let lines = face.cutLines([line]);
+
+        expect(lines.length).toBe(3);
+        expect(lines[0]).toBeInstanceOf(Line);
+        expect(lines[1]).toBeInstanceOf(Line);
+        expect(lines[2]).toBeInstanceOf(Line);
+        expect(lines[0]).toEqual(new Line(new Point(0,5), new Point(10,5)))
+        expect(lines[1]).toEqual(new Line(new Point(10,5), new Point(40,5)))
+        expect(lines[2]).toEqual(new Line(new Point(40,5), new Point(45,5)))
     })
 });

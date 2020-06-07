@@ -43,7 +43,7 @@ export class Polygon {
 
         let status = this._face.checkCollision(hole.getFace());
         if (status === Face.COLLISION_INSIDE) {
-            this._holes = hole.union(this._holes);
+            this._holes = hole.union(...this._holes);
         }
     }
 
@@ -59,20 +59,49 @@ export class Polygon {
         }
         let other = others[0];
 
-        let newFaces = this.getFace().union(other.getFace());
-        if (newFaces.length > 1) {
-            return [other, ...this.union(others.slice(1))];
+        let newFace = null;
+        let holes = [];
+        let intersectionStatus = this.checkCollision(other);
+        if (intersectionStatus === Face.COLLISION_NO_INTERSECION) {
+            // return [other, ...this.union(...others.slice(1))];
+            let unions = this.union(...others.slice(1));
+            let newUnions = [];
+            let found = false;
+            unions.forEach(u => {
+                if (!found && u.checkCollision(other) === Face.COLLISION_INSIDE){
+                    newUnions.push(...u.union(other));
+                    found = true;
+                }
+                else {
+                    newUnions.push(u);
+                }
+            });
+            if (!found){
+                newUnions.push(other);
+            }
+            return newUnions;
+        } else if (intersectionStatus === Face.COLLISION_INTERSECTS) {
+            let newFaces = this.getFace().union(other.getFace());
+            if (newFaces.length == 2) { // has intersection points, but no real intersection, is only touching
+                return [other, ...this.union(...others.slice(1))];
+            }
+            newFace = newFaces[0];
+            let halfFaces = newFace.setminus(this.getFace());
+
+            halfFaces.forEach(h => holes.push(...h.setminus(other.getFace())));
+            holes = holes.map(h => new Polygon(h));
+        } else if (intersectionStatus === Face.COLLISION_INSIDE) {
+            newFace = this.getFace();
+        } else if (intersectionStatus === Face.COLLISION_INSIDE_OTHER) {
+            newFace = other.getFace();
         }
 
-        let newFace = newFaces[0];
-        let halfFaces = newFace.setminus(this.getFace());
-
-        let holes = [];
-        halfFaces.forEach(h => holes.push(...h.setminus(other.getFace())));
-        holes = holes.map(h => new Polygon(h));
-
-        holes.push(...this.getHoles());
-        holes.push(...other.getHoles());
+        this.getHoles().forEach(hole => {
+            holes.push(...hole.setminus(other));
+        });
+        other.getHoles().forEach(hole => {
+            holes.push(...hole.setminus(this));
+        });
 
         holes = Polygon.arrayUnion(holes);
 
@@ -86,18 +115,28 @@ export class Polygon {
         if (collisionStatus === Face.COLLISION_NO_INTERSECION) {
             return [this];
         } else if (collisionStatus === Face.COLLISION_INSIDE_OTHER) {
-            return this.intersection(other.getHoles());
+            let otherHoles = other.getHoles();
+            if (otherHoles.length > 0) {
+                return this.intersection(...otherHoles);
+            } else {
+                return [];
+            }
         } else if (collisionStatus === Face.COLLISION_INSIDE) {
             this.addHole(other);
             return [this];
         }
         //Has Intersection
         else {
-            let intersections = this.intersection(other.getHoles());
+            let otherHoles = other.getHoles();
+            let intersections = [];
+            if (otherHoles.length > 0) {
+                intersections = this.intersection(...otherHoles);
+            }
+
             let smallerPolygons = this.getFace().setminus(other.getFace()).map(f => new Polygon(f));
             let newPolygons = [];
             smallerPolygons.forEach(p => {
-                newPolygons.push(p.union(intersections));
+                newPolygons.push(...p.union(...intersections));
             });
 
             let holes = this.getHoles();
@@ -110,15 +149,15 @@ export class Polygon {
         }
     }
 
-    intersection(others) {
+    intersection(...others) {
         let otherFaces = [];
-        let holesBefore = this.getHoles();
+        let holesBefore = [...this.getHoles()];
         others.forEach(o => {
             otherFaces.push(o.getFace());
             holesBefore.push(...o.getHoles());
         });
 
-        let intersectedPolygons = this.getFace().intersection(otherFaces).map(f => new Polygon(f));
+        let intersectedPolygons = this.getFace().intersection(...otherFaces).map(f => new Polygon(f));
 
         holesBefore.forEach(h => {
             let newPolygons = [];
