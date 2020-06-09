@@ -8,7 +8,8 @@ export class Face {
     static COLLISION_INSIDE = 1;
     static COLLISION_INSIDE_OTHER = 2;
     static COLLISION_INTERSECTS = 3;
-    static COLLISION_NO_INTERSECION = 4;
+    static COLLISION_NO_INTERSECTION = 4;
+    static COLLISION_TOUCHING = 5;
 
     _points;
 
@@ -68,7 +69,16 @@ export class Face {
     }
 
     split() {
+        // let lines = this.cutLines(this.getLines());
+        // let oldPoints = [];
+        // lines.forEach(l => {
+        //     if (Point.indexOf(oldPoints, l.p1) === -1) {
+        //         oldPoints.push(l.p1);
+        //     }
+        // })
+
         let newFaces = [];
+
         let oldPoints = this.getPoints();
         for (let i = 0; i < oldPoints.length; i++) {
             let p = oldPoints[i];
@@ -81,15 +91,16 @@ export class Face {
         return newFaces;
     }
 
-    containsPoint(point, lineStartingPoint?) {
+    containsPoint(point, withTouching?) {
         let min = Point.min(...this._points);
         let max = Point.max(...this._points);
 
         if (point.x < min.x || point.y < min.y || point.x > max.x || point.y > max.y) {
             return false;
         }
+        withTouching = Helper.nonNull(withTouching, true);
 
-        lineStartingPoint = Helper.nonNull(lineStartingPoint, new Point(min.x - 1, point.y))
+        let lineStartingPoint = new Point(min.x - 1, point.y);
 
         let count = 0;
         let repeat = false;
@@ -101,7 +112,7 @@ export class Face {
             for (let i = 0, n = lines.length; i < n; i++) {
                 let l = lines[i];
                 if (l.containsPoint(point)) {
-                    return true;
+                    return withTouching;
                 }
                 let newIntersectionPoints = line.getIntersectionPointsWith(l);
                 if (newIntersectionPoints.length === 1 && (newIntersectionPoints[0].equals(l.p1) || newIntersectionPoints[0].equals(l.p2))) {
@@ -115,18 +126,49 @@ export class Face {
         return count % 2 === 1;
     }
 
-    checkCollision(otherFace) {
-        let [one, another] = Face._getFacesWithIntersectionPoints(this, otherFace);
-        if (one === this) {
-            if (one.containsPoint(another.getLastPoint())) { //If one contains another
-                return Face.COLLISION_INSIDE;
-            } else if (another.containsPoint(one.getLastPoint())) { //If another contains one
-                return Face.COLLISION_INSIDE_OTHER;
-            } else { //if none contains another
-                return Face.COLLISION_NO_INTERSECION;
+    _getPointInside() {
+        let line = new Line(this._points[0], this._points[1]);
+        let center = line.getCenter();
+        let offset = new Point(1, 0);
+
+        if (line._gradient === 0) {
+            offset = new Point(0, 1);
+        }
+
+        for (let i = 0; true; i++) {
+            let currentOffset = offset.divide(Math.pow(2, i));
+            if (this.containsPoint(center.copy().add(currentOffset))) {
+                return center.copy().add(currentOffset);
+            } else if (this.containsPoint(center.copy().substract(currentOffset))) {
+                return center.copy().substract(currentOffset);
             }
         }
-        return Face.COLLISION_INTERSECTS;
+    }
+
+    checkCollision(otherFace) {
+        let [one, other] = Face._getFacesWithIntersectionPoints(this, otherFace);
+        if (one === this) {
+            if (this.containsPoint(otherFace.getLastPoint())) { //If one contains another
+                return Face.COLLISION_INSIDE;
+            } else if (otherFace.containsPoint(this.getLastPoint())) { //If another contains one
+                return Face.COLLISION_INSIDE_OTHER;
+            } else { //if none contains another
+                return Face.COLLISION_NO_INTERSECTION;
+            }
+        } else {
+            let lines = one.getLines();
+            if (lines.some(l => otherFace.containsPoint(l.getCenter(), false))) {
+                return Face.COLLISION_INTERSECTS;
+            } else {
+                if (this.containsPoint(other._getPointInside())) {
+                    return Face.COLLISION_INSIDE;
+                } else if (otherFace.containsPoint(one._getPointInside())) {
+                    return Face.COLLISION_INSIDE_OTHER;
+                } else {
+                    return Face.COLLISION_TOUCHING;
+                }
+            }
+        }
     }
 
     removeUnnecessaryPoints() {
@@ -471,7 +513,7 @@ export class Face {
         return nextPoint;
     }
 
-    static _getFacesWithIntersectionPoints(one, another) {
+    static _getIntersections(one, another) {
         let intersections1 = {};
         let intersections2 = {};
 
@@ -500,10 +542,18 @@ export class Face {
             });
         });
 
+        return [intersections1, intersections2];
+    }
 
-        if (!hasIntersections) {
+    static _getFacesWithIntersectionPoints(one, another) {
+        let [intersections1, intersections2] = this._getIntersections(one, another);
+
+        if (Object.keys(intersections1).length === 0) {
             return [one, another]
         }
+
+        let lines1 = one.getLines();
+        let lines2 = another.getLines();
 
         //integrate intersections into points
         let points = [];

@@ -6,7 +6,7 @@ export declare class Polygon {
     getHoles(): any;
     checkCollision(other: any): any;
     setHoles(holes: any): void;
-    addHole(hole: any): void;
+    addHole(hole: any): boolean;
     removeUnnecessaryPoints(): this;
     union(...others: any[]): any;
     setminus(other: any): any;

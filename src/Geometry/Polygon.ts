@@ -38,12 +38,15 @@ export class Polygon {
 
     addHole(hole) {
         if (!(hole instanceof Polygon)) {
-            return;
+            return false;
         }
 
         let status = this._face.checkCollision(hole.getFace());
         if (status === Face.COLLISION_INSIDE) {
             this._holes = hole.union(...this._holes);
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -55,45 +58,44 @@ export class Polygon {
 
     union(...others) {
         if (others.length === 0) {
-            return [this];
+            return [this.removeUnnecessaryPoints()];
         }
         let other = others[0];
 
-        let newFace = null;
+        let newFaces = null;
         let holes = [];
         let intersectionStatus = this.checkCollision(other);
-        if (intersectionStatus === Face.COLLISION_NO_INTERSECION) {
+        if (intersectionStatus === Face.COLLISION_NO_INTERSECTION) {
             // return [other, ...this.union(...others.slice(1))];
             let unions = this.union(...others.slice(1));
             let newUnions = [];
             let found = false;
             unions.forEach(u => {
-                if (!found && u.checkCollision(other) === Face.COLLISION_INSIDE){
+                if (!found && u.checkCollision(other) === Face.COLLISION_INSIDE) {
                     newUnions.push(...u.union(other));
                     found = true;
-                }
-                else {
+                } else {
                     newUnions.push(u);
                 }
             });
-            if (!found){
+            if (!found) {
                 newUnions.push(other);
             }
             return newUnions;
         } else if (intersectionStatus === Face.COLLISION_INTERSECTS) {
-            let newFaces = this.getFace().union(other.getFace());
-            if (newFaces.length == 2) { // has intersection points, but no real intersection, is only touching
-                return [other, ...this.union(...others.slice(1))];
-            }
-            newFace = newFaces[0];
-            let halfFaces = newFace.setminus(this.getFace());
+            newFaces = this.getFace().union(other.getFace());
+
+            let halfFaces = [];
+            newFaces.forEach(face => {
+                halfFaces.push(...face.setminus(this.getFace()))
+            })
 
             halfFaces.forEach(h => holes.push(...h.setminus(other.getFace())));
             holes = holes.map(h => new Polygon(h));
         } else if (intersectionStatus === Face.COLLISION_INSIDE) {
-            newFace = this.getFace();
+            newFaces = [this.getFace()];
         } else if (intersectionStatus === Face.COLLISION_INSIDE_OTHER) {
-            newFace = other.getFace();
+            newFaces = [other.getFace()];
         }
 
         this.getHoles().forEach(hole => {
@@ -105,14 +107,23 @@ export class Polygon {
 
         holes = Polygon.arrayUnion(holes);
 
-        let newPolygon = new Polygon(newFace);
-        newPolygon.setHoles(holes);
-        return newPolygon.union(...others.slice(1));
+        let newPolygons = newFaces.map(f => new Polygon(f));
+        holes.forEach(h => {
+            newPolygons.some(p => {
+                return p.addHole(h);
+            });
+        });
+
+            return newPolygons[0].union(...others.slice(1));
+        // if (newPolygons.length > 1) {
+        //     return Polygon.arrayUnion([...newPolygons, ...others.slice(1)]);
+        // } else {
+        // }
     }
 
     setminus(other) {
         let collisionStatus = this.checkCollision(other);
-        if (collisionStatus === Face.COLLISION_NO_INTERSECION) {
+        if (collisionStatus === Face.COLLISION_NO_INTERSECTION) {
             return [this];
         } else if (collisionStatus === Face.COLLISION_INSIDE_OTHER) {
             let otherHoles = other.getHoles();
@@ -178,6 +189,10 @@ export class Polygon {
         return intersectedPolygons;
     }
 
+    // static arrayUnion(arrayOfPolygons) {
+    //     let newPolygons = [];
+    // }
+
     static arrayUnion(arrayOfPolygons) {
         let unionPairs = {};
         let mapping = {};
@@ -192,7 +207,7 @@ export class Polygon {
         arrayOfPolygons.forEach((p, i) => {
             unionPairs[i] = unionPairs[i] || [];
             arrayOfPolygons.forEach((p2, j) => {
-                if (j > i && p.checkCollision(p2) !== Face.COLLISION_NO_INTERSECION) {
+                if (j > i && p.checkCollision(p2) !== Face.COLLISION_NO_INTERSECTION) {
                     let jMappingIndex = getMappedIndex(j);
                     if (jMappingIndex !== j) {
                         unionPairs[j] = unionPairs[j] || [];
@@ -209,6 +224,7 @@ export class Polygon {
         Object.keys(unionPairs).forEach(i => {
             let mappedIndex = getMappedIndex(i);
             let res = arrayOfPolygons[mappedIndex].union(...unionPairs[i].map(j => arrayOfPolygons[j]))
+            //TODO falls durch split mehrere Polygone zurückkommen beachten
             arrayOfPolygons[mappedIndex] = res[0];
         });
 

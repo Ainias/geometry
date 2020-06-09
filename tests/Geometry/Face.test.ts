@@ -385,4 +385,88 @@ describe('face', () => {
         expect(lines[1]).toEqual(new Line(new Point(10,5), new Point(40,5)))
         expect(lines[2]).toEqual(new Line(new Point(40,5), new Point(45,5)))
     })
+
+    it('check collision 1', () => {
+        let face1 = Face.rect(new Point(0,0), new Point(5,5));
+        let face2 = Face.rect(new Point(0,0), new Point(5,5));
+
+        let collisionStatus = face1.checkCollision(face2);
+
+        expect(collisionStatus).toBe(Face.COLLISION_INSIDE);
+    })
+
+    it('check collision 2', () => {
+        let face1 = Face.rect(new Point(0,0), new Point(10,10));
+        let face2 = Face.rect(new Point(0,0), new Point(5,5));
+
+        let collisionStatus = face1.checkCollision(face2);
+
+        expect(collisionStatus).toBe(Face.COLLISION_INSIDE);
+    })
+
+    it('check collision 3', () => {
+        let face1 = Face.rect(new Point(0,0), new Point(5,5));
+        let face2 = Face.rect(new Point(0,0), new Point(10,10));
+
+        let collisionStatus = face1.checkCollision(face2);
+
+        expect(collisionStatus).toBe(Face.COLLISION_INTERSECTS);
+    })
+
+    it('check collision 3', () => {
+        let face1 = Face.rect(new Point(0,0), new Point(5,5));
+        let face2 = Face.rect(new Point(5,5), new Point(10,10));
+
+        let collisionStatus = face1.checkCollision(face2);
+
+        expect(collisionStatus).toBe(Face.COLLISION_TOUCHING);
+    })
+
+    it('check collision 4', () => {
+        let face1 = Face.rect(new Point(0,0), new Point(5,5));
+        let face2 = Face.rect(new Point(0,5), new Point(10,10));
+
+        let collisionStatus = face1.checkCollision(face2);
+
+        expect(collisionStatus).toBe(Face.COLLISION_TOUCHING);
+    })
+
+    it('check collision 5', () => {
+        let face1 = Face.rect(new Point(0,0), new Point(5,5));
+        let face2 = Face.rect(new Point(0,6), new Point(10,10));
+
+        let collisionStatus = face1.checkCollision(face2);
+
+        expect(collisionStatus).toBe(Face.COLLISION_NO_INTERSECTION);
+    })
+
+    it('check collision 6', () => {
+        let face1 = Face.rect(new Point(0,0), new Point(10,10));
+        let face2 = Face.rect(new Point(1,2), new Point(8,8));
+
+        let collisionStatus = face1.checkCollision(face2);
+
+        expect(collisionStatus).toBe(Face.COLLISION_INSIDE);
+    })
+
+    it('check collision 6', () => {
+        let face1 = Face.rect(new Point(0,0), new Point(10,10));
+        let face2 = Face.rect(new Point(1,2), new Point(8,8));
+
+        let collisionStatus = face2.checkCollision(face1);
+
+        expect(collisionStatus).toBe(Face.COLLISION_INSIDE_OTHER);
+    })
+
+    xit('union with self-crossing polygon', () => {
+        let face1 = new Face(new Point(315, 245), new Point(315, 735), new Point(630, 735), new Point(630, 245));
+        let face2 = new Face(new Point(175, 280), new Point(455, 70), new Point(210, 490), new Point(770, 560));
+
+        let union = face2.union(face1);
+
+        expect(union.length).toBe(1);
+        expect(union[0]).toBeInstanceOf(Face);
+        // expect(setminus[0].getPoints()).toEqual([new Point(10,10), new Point(10,40), new Point(20,40), new Point(20,10)])
+        // expect(setminus[1].getPoints()).toEqual([new Point(30,10), new Point(30,40), new Point(40,40), new Point(40,10)])
+    })
 });

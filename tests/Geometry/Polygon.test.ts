@@ -50,7 +50,7 @@ describe('polygon', () => {
         expect(union[0].getHoles().length).toBe(0);
     })
 
-    it('union4', () => {
+    fit('union4', () => {
         let polygon1 = new Polygon([new Point(0, 0), new Point(0, 15), new Point(5, 15), new Point(5, 5), new Point(15, 5), new Point(15, 15), new Point(20, 15), new Point(20, 0)])
         let polygon2 = Polygon.rect(new Point(0, 15), new Point(20, 20));
         // let hole = Polygon.rect(new Point(10,10), new Point(30,30));
@@ -138,7 +138,7 @@ describe('polygon', () => {
         expect(union[1].getHoles().length).toBe(0);
     })
 
-    it('union no intersection but touching', () => {
+    fit('union no intersection but touching', () => {
         let polygon1 = Polygon.rect(new Point(0, 0), new Point(10, 10));
         let polygon2 = Polygon.rect(new Point(10, 10), new Point(20, 20));
 
@@ -154,7 +154,7 @@ describe('polygon', () => {
         expect(union[1].getHoles().length).toBe(0);
     })
 
-    it('union with hole 1', () => {
+    fit('union with hole 1', () => {
         let polygon1 = Polygon.rect(new Point(0, 0), new Point(30, 30));
         let polygon2 = Polygon.rect(new Point(10, 10), new Point(20, 20));
         let hole = Polygon.rect(new Point(10, 10), new Point(20, 20));
@@ -169,7 +169,7 @@ describe('polygon', () => {
         expect(union[0].getHoles().length).toBe(0);
     })
 
-    it('union with hole 2', () => {
+    fit('union with hole 2', () => {
         let polygon1 = Polygon.rect(new Point(0, 0), new Point(30, 30));
         let polygon2 = Polygon.rect(new Point(10, 10), new Point(15, 20));
         let hole = Polygon.rect(new Point(10, 10), new Point(20, 20));
@@ -228,11 +228,11 @@ describe('polygon', () => {
         expect(holes.length).toBe(2);
         expect(holes[0]).toBeInstanceOf(Polygon);
         expect(holes[1]).toBeInstanceOf(Polygon);
-        expect(holes[0].getFace().getPoints()).toEqual([new Point(10, 10), new Point(10, 40), new Point(20, 40), new Point(20, 10)])
-        expect(holes[1].getFace().getPoints()).toEqual([new Point(30, 10), new Point(30, 40), new Point(40, 40), new Point(40, 10)])
+        expect(holes[0].getFace().getPoints()).toEqual([new Point(30, 10), new Point(30, 40), new Point(40, 40), new Point(40, 10)])
+        expect(holes[1].getFace().getPoints()).toEqual([new Point(10, 10), new Point(10, 40), new Point(20, 40), new Point(20, 10)])
     })
 
-    it('union with holes 5', () => {
+    fit('union with holes 5', () => {
         let polygon1 = Polygon.rect(new Point(25, 5), new Point(30, 10));
 
         let polygon2 = Polygon.rect(new Point(15, 15), new Point(35, 35))
@@ -293,7 +293,7 @@ describe('polygon', () => {
         expect(islandHolesIslands.length).toBe(0);
     })
 
-    it('setminus 1', () => {
+    fit('setminus 1', () => {
         let polygon1 = Polygon.rect(new Point(10, 10), new Point(20, 20));
         let polygon2 = Polygon.rect(new Point(10, 10), new Point(15, 20));
 
@@ -320,7 +320,7 @@ describe('polygon', () => {
         expect(setminus[1].getFace().getPoints()).toEqual([new Point(30, 10), new Point(30, 40), new Point(40, 40), new Point(40, 10)])
     })
 
-    it('setminus with holes', () => {
+    fit('setminus with holes', () => {
         let polygon1 = Polygon.rect(new Point(0, 0), new Point(50, 50));
         let polygon2 = Polygon.rect(new Point(25, 5), new Point(30, 10));
 
@@ -360,6 +360,18 @@ describe('polygon', () => {
         let setminus = polygon1.setminus(polygon2);
 
         expect(setminus.length).toBe(0);
+    })
+
+    it('union with multiple polygons as result', () => {
+        let face1 = new Face(new Point(315, 245), new Point(315, 735), new Point(630, 735), new Point(630, 245));
+        let face2 = new Face(new Point(175, 280), new Point(455, 70), new Point(210, 490), new Point(770, 560));
+
+        let p1 = new Polygon(face1);
+        let p2 = new Polygon(face2);
+
+        let union = p2.union(p1);
+
+        expect(union.length).toBe(3);
     })
 
     xit('setminus with holes', () => {
