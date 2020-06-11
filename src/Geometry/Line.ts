@@ -95,7 +95,7 @@ export class Line {
             let factor2 = diffCross2 / vectorCross1; //s
 
             if (factor1 >= 0 && factor1 <= 1 && factor2 >= 0 && factor2 <= 1) {
-                return [this.p1.copy().add(vector.multiply(factor1))];
+                return [this.p1.copy().add(vector.multiply(factor1)).round(10)];
             }
         }
         return [];

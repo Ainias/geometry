@@ -82,7 +82,7 @@ export class Point {
     }
 
     round(onDecimal?) {
-        onDecimal = Helper.nonNull(0, 0);
+        onDecimal = Helper.nonNull(onDecimal, 0);
         let multiplier = Math.pow(10, onDecimal);
         this.x = Math.round(this.x * multiplier) / multiplier;
         this.y = Math.round(this.y * multiplier) / multiplier;
@@ -256,7 +256,7 @@ export class Point {
             return false;
         }
 
-        delta = Helper.nonNull(delta, 0);
+        delta = Helper.nonNull(delta, 0.0000000001);
 
         let deltaPoint = this.copy().substract(other).abs();
         return deltaPoint.x <= delta

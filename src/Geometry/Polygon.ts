@@ -1,5 +1,6 @@
 import {Helper} from "js-helper/dist/shared/Helper";
 import {Face} from "./Face";
+import {Counter} from "js-helper/dist/shared/Counter";
 
 export class Polygon {
 
@@ -45,7 +46,12 @@ export class Polygon {
         if (status === Face.COLLISION_INSIDE) {
             this._holes = hole.union(...this._holes);
             return true;
-        } else {
+        }
+            // else if (status === Face.COLLISION_TOUCHING_INSIDE){
+            //     let res = this.setminus(hole);
+            //     return false;
+        // }
+        else {
             return false;
         }
     }
@@ -66,12 +72,13 @@ export class Polygon {
         let holes = [];
         let intersectionStatus = this.checkCollision(other);
         if (intersectionStatus === Face.COLLISION_NO_INTERSECTION) {
-            // return [other, ...this.union(...others.slice(1))];
+            // return [...this.union(...others.slice(1)), other];
             let unions = this.union(...others.slice(1));
             let newUnions = [];
             let found = false;
             unions.forEach(u => {
-                if (!found && u.checkCollision(other) === Face.COLLISION_INSIDE) {
+                //TODO what?!?
+                if (!found && (u.checkCollision(other) === Face.COLLISION_INSIDE)) {
                     newUnions.push(...u.union(other));
                     found = true;
                 } else {
@@ -82,39 +89,40 @@ export class Polygon {
                 newUnions.push(other);
             }
             return newUnions;
-        } else if (intersectionStatus === Face.COLLISION_INTERSECTS) {
+        } else if (intersectionStatus === Face.COLLISION_INTERSECTS || intersectionStatus === Face.COLLISION_TOUCHING) {
             newFaces = this.getFace().union(other.getFace());
 
             let halfFaces = [];
-            newFaces.forEach(face => {
-                halfFaces.push(...face.setminus(this.getFace()))
-            })
-
+            newFaces.forEach(face => halfFaces.push(...face.setminus(this.getFace())))
             halfFaces.forEach(h => holes.push(...h.setminus(other.getFace())));
+
             holes = holes.map(h => new Polygon(h));
-        } else if (intersectionStatus === Face.COLLISION_INSIDE) {
+        } else if (intersectionStatus === Face.COLLISION_INSIDE || intersectionStatus === Face.COLLISION_TOUCHING_INSIDE) {
             newFaces = [this.getFace()];
-        } else if (intersectionStatus === Face.COLLISION_INSIDE_OTHER) {
+        } else if (intersectionStatus === Face.COLLISION_INSIDE_OTHER || intersectionStatus === Face.COLLISION_TOUCHING_INSIDE_OTHER) {
             newFaces = [other.getFace()];
         }
 
-        this.getHoles().forEach(hole => {
-            holes.push(...hole.setminus(other));
-        });
-        other.getHoles().forEach(hole => {
-            holes.push(...hole.setminus(this));
-        });
+        this.getHoles().forEach(hole => holes.push(...hole.setminus(other)));
+        other.getHoles().forEach(hole => holes.push(...hole.setminus(this)));
 
         holes = Polygon.arrayUnion(holes);
 
-        let newPolygons = newFaces.map(f => new Polygon(f));
-        holes.forEach(h => {
-            newPolygons.some(p => {
-                return p.addHole(h);
+        let polygons = newFaces.map(f => new Polygon(f));
+        let newPolygons = [];
+        polygons.forEach(p => {
+            let polygonsBefore = [p];
+            holes.forEach(h => {
+                let polygonsAfter = [];
+                polygonsBefore.forEach(p => {
+                    polygonsAfter.push(...p.setminus(h));
+                });
+                polygonsBefore = polygonsAfter;
             });
+            newPolygons.push(...polygonsBefore);
         });
 
-            return newPolygons[0].union(...others.slice(1));
+        return [...newPolygons[0].union(...others.slice(1)), ...newPolygons.slice(1)];
         // if (newPolygons.length > 1) {
         //     return Polygon.arrayUnion([...newPolygons, ...others.slice(1)]);
         // } else {
@@ -123,7 +131,7 @@ export class Polygon {
 
     setminus(other) {
         let collisionStatus = this.checkCollision(other);
-        if (collisionStatus === Face.COLLISION_NO_INTERSECTION) {
+        if (collisionStatus === Face.COLLISION_NO_INTERSECTION || collisionStatus === Face.COLLISION_TOUCHING) {
             return [this];
         } else if (collisionStatus === Face.COLLISION_INSIDE_OTHER) {
             let otherHoles = other.getHoles();
@@ -177,7 +185,7 @@ export class Polygon {
                 if (overlappingStatus === Face.COLLISION_INSIDE) {
                     p.addHole(h);
                     newPolygons.push(p);
-                } else if (overlappingStatus === Face.COLLISION_INSIDE_OTHER || overlappingStatus === Face.COLLISION_INTERSECTS) {
+                } else if (overlappingStatus === Face.COLLISION_INSIDE_OTHER || overlappingStatus === Face.COLLISION_INTERSECTS || overlappingStatus === Face.COLLISION_TOUCHING_INSIDE || overlappingStatus === Face.COLLISION_TOUCHING_INSIDE_OTHER) {
                     newPolygons.push(...p.setminus(h));
                 } else {
                     newPolygons.push(p);
@@ -188,10 +196,6 @@ export class Polygon {
 
         return intersectedPolygons;
     }
-
-    // static arrayUnion(arrayOfPolygons) {
-    //     let newPolygons = [];
-    // }
 
     static arrayUnion(arrayOfPolygons) {
         let unionPairs = {};
@@ -233,5 +237,29 @@ export class Polygon {
 
     static rect(p1, p2) {
         return new Polygon([p1.copy(), p1.copy().setY(p2.y), p2.copy(), p1.copy().setX(p2.x)]);
+    }
+
+    __getSourceCode(index, parentArray?) {
+        index = Helper.nonNull(index, 0);
+        if (!(index instanceof Counter)){
+            index = new Counter(index);
+        }
+
+        let id = index.next();
+        let name = "polygon" + id;
+        let code = "let holes" + id + " = [];\n";
+        code += "let " + name + " = new Polygon([";
+        code += this.getFace().getPoints().map(p => "new Point(" + p.x + "," + p.y + ")").join(" , ");
+        code += "]);\n";
+        if (parentArray) {
+            code += parentArray + ".push(" + name + ");\n";
+        }
+        code += "\n";
+        this.getHoles().forEach((h,i) => {
+            code += h.__getSourceCode(index, "holes" + id);
+        });
+        code += name + ".setHoles(holes" + id + ");\n\n";
+
+        return code;
     }
 }

@@ -1,10 +1,11 @@
-import { Point } from "./Point";
 export declare class Face {
     static COLLISION_INSIDE: number;
     static COLLISION_INSIDE_OTHER: number;
     static COLLISION_INTERSECTS: number;
     static COLLISION_NO_INTERSECTION: number;
     static COLLISION_TOUCHING: number;
+    static COLLISION_TOUCHING_INSIDE: number;
+    static COLLISION_TOUCHING_INSIDE_OTHER: number;
     _points: any;
     constructor(...points: any[]);
     setPoints(points: any): void;
@@ -13,17 +14,17 @@ export declare class Face {
     getLastPoint(): any;
     split(): any[];
     containsPoint(point: any, withTouching?: any): any;
-    _getPointInside(): Point;
+    _getPointInside(): any;
     checkCollision(otherFace: any): number;
     removeUnnecessaryPoints(): this;
     setminus(other: any): any[];
-    union(...other: any[]): any;
-    intersection(...other: any[]): any;
+    union(...others: any[]): any;
+    intersection(...others: any[]): any;
     cutLines(lines: any): any[];
     cutLinesOutside(lines: any): any[];
     cutLinesWithin(lines: any): any[];
     static rect(p1: any, p2: any): Face;
     static _getNextPoint(inVector: any, referencePoint: any, points: any, useSmallestAngle?: any): any;
-    static _getIntersections(one: any, another: any): {}[];
+    static _getIntersections(lines1: any, lines2: any): {}[];
     static _getFacesWithIntersectionPoints(one: any, another: any): any[];
 }

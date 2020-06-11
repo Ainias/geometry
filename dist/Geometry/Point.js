@@ -65,7 +65,7 @@ class Point {
         return this.x * this.y;
     }
     round(onDecimal) {
-        onDecimal = Helper_1.Helper.nonNull(0, 0);
+        onDecimal = Helper_1.Helper.nonNull(onDecimal, 0);
         let multiplier = Math.pow(10, onDecimal);
         this.x = Math.round(this.x * multiplier) / multiplier;
         this.y = Math.round(this.y * multiplier) / multiplier;
@@ -201,7 +201,7 @@ class Point {
         if (!(other instanceof Point)) {
             return false;
         }
-        delta = Helper_1.Helper.nonNull(delta, 0);
+        delta = Helper_1.Helper.nonNull(delta, 0.0000000001);
         let deltaPoint = this.copy().substract(other).abs();
         return deltaPoint.x <= delta
             && deltaPoint.y <= delta;
