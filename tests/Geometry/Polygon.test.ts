@@ -119,7 +119,7 @@ describe('polygon', () => {
 
         expect(union.length).toBe(1);
         expect(union[0]).toBeInstanceOf(Polygon);
-        expect(union[0].getFace().getPoints()).toEqual([new Point(140, 35), new Point(140, 595), new Point(945, 595), new Point(945, 35)])
+        expect(union[0].getFace().getPoints()).toEqual([new Point(140, 35), new Point(140, 595), new Point(945, 595), new Point(945, 245), new Point(945, 35)])
     })
 
     it('union no intersection', () => {
@@ -131,8 +131,8 @@ describe('polygon', () => {
         expect(union.length).toBe(2);
         expect(union[0]).toBeInstanceOf(Polygon);
         expect(union[1]).toBeInstanceOf(Polygon);
-        expect(union[0].getFace().getPoints()).toEqual([new Point(0, 0), new Point(0, 10), new Point(10, 10), new Point(10, 0)]);
-        expect(union[1].getFace().getPoints()).toEqual([new Point(20, 20), new Point(20, 30), new Point(30, 30), new Point(30, 20)]);
+        expect(union[0].getFace().getPoints()).toEqual([new Point(20, 20), new Point(20, 30), new Point(30, 30), new Point(30, 20)]);
+        expect(union[1].getFace().getPoints()).toEqual([new Point(0, 0), new Point(0, 10), new Point(10, 10), new Point(10, 0)]);
 
         expect(union[0].getHoles().length).toBe(0);
         expect(union[1].getHoles().length).toBe(0);
@@ -144,14 +144,11 @@ describe('polygon', () => {
 
         let union = polygon1.union(polygon2);
 
-        expect(union.length).toBe(2);
+        expect(union.length).toBe(1);
         expect(union[0]).toBeInstanceOf(Polygon);
-        expect(union[1]).toBeInstanceOf(Polygon);
-        expect(union[0].getFace().getPoints()).toEqual([new Point(10, 10), new Point(10, 20), new Point(20, 20), new Point(20, 10)]);
-        expect(union[1].getFace().getPoints()).toEqual([new Point(0, 0), new Point(0, 10), new Point(10, 10), new Point(10, 0)]);
+        expect(union[0].getFace().getPoints()).toEqual([new Point(0, 0), new Point(0, 10), new Point(10, 10), new Point(10, 20), new Point(20, 20), new Point(20, 10), new Point(10, 10), new Point(10, 0)]);
 
         expect(union[0].getHoles().length).toBe(0);
-        expect(union[1].getHoles().length).toBe(0);
     })
 
     it('union with hole 1', () => {
@@ -316,8 +313,8 @@ describe('polygon', () => {
         expect(setminus.length).toBe(2);
         expect(setminus[0]).toBeInstanceOf(Polygon);
         expect(setminus[1]).toBeInstanceOf(Polygon);
-        expect(setminus[0].getFace().getPoints()).toEqual([new Point(10, 10), new Point(10, 40), new Point(20, 40), new Point(20, 10)])
-        expect(setminus[1].getFace().getPoints()).toEqual([new Point(30, 10), new Point(30, 40), new Point(40, 40), new Point(40, 10)])
+        expect(setminus[0].getFace().getPoints()).toEqual([new Point(30, 10), new Point(30, 40), new Point(40, 40), new Point(40, 10)])
+        expect(setminus[1].getFace().getPoints()).toEqual([new Point(10, 10), new Point(10, 40), new Point(20, 40), new Point(20, 10)])
     })
 
     it('setminus with holes', () => {
@@ -372,10 +369,10 @@ describe('polygon', () => {
         let union = p2.union(p1);
 
         expect(union.length).toBe(1);
-        expect(union[0].getFace().getPoints()).toEqual([new Point(0, 0), new Point(35, 35), new Point(45, 25), new Point(45, 45), new Point(35, 35), new Point(0, 70), new Point(90, 70), new Point(90, 0)])
+        expect(union[0].getFace().getPoints()).toEqual([new Point(0, 0), new Point(35, 35), new Point(0, 70), new Point(90, 70), new Point(90, 0)])
 
         let holes = union[0].getHoles();
-        expect(holes.length).toBe(0);
+        expect(holes.length).toBe(1);
     })
 
     it('union 13', () => {
@@ -385,9 +382,10 @@ describe('polygon', () => {
         let union = polygon2.union(polygon1)
 
         expect(union.length).toBe(1);
+        expect(union[0].getFace().getPoints().length).toBe(8);
 
         let holes = union[0].getHoles();
-        expect(holes.length).toBe(0);
+        expect(holes.length).toBe(1);
     })
 
     xit('setminus with holes', () => {

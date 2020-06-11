@@ -1,6 +1,5 @@
 import {Point} from "../../src/Geometry/Point";
 import {Face} from "../../src/Geometry/Face";
-import {Polygon} from "../../src/Geometry/Polygon";
 import {Line} from "../../src/Geometry/Line";
 
 describe('face', () => {
@@ -146,17 +145,6 @@ describe('face', () => {
         expect(union.length).toBe(1);
         expect(union[0]).toBeInstanceOf(Face);
         expect(union[0].getPoints()).toEqual([new Point(10, 10), new Point(10, 20), new Point(20, 20), new Point(20, 10)]);
-    })
-
-    it('union7', () => {
-        let face1 = Face.rect(new Point(10, 10), new Point(20, 20))
-        let face2 = Face.rect(new Point(20, 20), new Point(30, 30))
-
-        let union = face1.union(face2);
-
-        expect(union.length).toBe(2);
-        // expect(union[0]).toBeInstanceOf(Face);
-        // expect(union[0].getPoints()).toEqual([new Point(10, 10), new Point(10, 20), new Point(15, 20), new Point(15, 25), new Point(25, 25), new Point(25, 15), new Point(20, 15), new Point(20, 10)]);
     })
 
     it("union 8", () => {
@@ -392,7 +380,7 @@ describe('face', () => {
 
         let collisionStatus = face1.checkCollision(face2);
 
-        expect(collisionStatus).toBe(Face.COLLISION_TOUCHING_INSIDE);
+        expect(collisionStatus).toBe(Face.COLLISION_TOUCHING | Face.COLLISION_INSIDE);
     })
 
     it('check collision 2', () => {
@@ -401,7 +389,7 @@ describe('face', () => {
 
         let collisionStatus = face1.checkCollision(face2);
 
-        expect(collisionStatus).toBe(Face.COLLISION_TOUCHING_INSIDE);
+        expect(collisionStatus).toBe(Face.COLLISION_TOUCHING | Face.COLLISION_INSIDE);
     })
 
     it('check collision 3', () => {
@@ -410,7 +398,7 @@ describe('face', () => {
 
         let collisionStatus = face1.checkCollision(face2);
 
-        expect(collisionStatus).toBe(Face.COLLISION_TOUCHING_INSIDE_OTHER);
+        expect(collisionStatus).toBe((Face.COLLISION_TOUCHING | Face.COLLISION_INSIDE_OTHER));
     })
 
     it('check collision 3', () => {
@@ -419,7 +407,7 @@ describe('face', () => {
 
         let collisionStatus = face1.checkCollision(face2);
 
-        expect(collisionStatus).toBe(Face.COLLISION_TOUCHING);
+        expect(collisionStatus).toBe(Face.COLLISION_TOUCHING | Face.COLLISION_POINT);
     })
 
     it('check collision 4', () => {
@@ -437,7 +425,7 @@ describe('face', () => {
 
         let collisionStatus = face1.checkCollision(face2);
 
-        expect(collisionStatus).toBe(Face.COLLISION_NO_INTERSECTION);
+        expect(collisionStatus).toBe(Face.COLLISION_NONE);
     })
 
     it('check collision 6', () => {
@@ -458,19 +446,6 @@ describe('face', () => {
         expect(collisionStatus).toBe(Face.COLLISION_INSIDE_OTHER);
     })
 
-    it('union no intersection but touching', () => {
-        let face1 = Face.rect(new Point(0, 0), new Point(10, 10));
-        let face2 = Face.rect(new Point(10, 10), new Point(20, 20));
-
-        let union = face1.union(face2);
-
-        expect(union.length).toBe(2);
-        expect(union[0]).toBeInstanceOf(Face);
-        expect(union[1]).toBeInstanceOf(Face);
-        expect(union[0].getPoints()).toEqual([new Point(10, 10), new Point(10, 20), new Point(20, 20), new Point(20, 10)]);
-        expect(union[1].getPoints()).toEqual([new Point(0, 0), new Point(0, 10), new Point(10, 10), new Point(10, 0)]);
-    })
-
     it('union with self-crossing polygon', () => {
         let face1 = new Face(new Point(45, 0), new Point(45, 70), new Point(90, 70), new Point(90, 0));
         let face2 = new Face(new Point(0, 0), new Point(70, 0), new Point(0, 70), new Point(70, 70));
@@ -483,17 +458,26 @@ describe('face', () => {
         // expect(setminus[1].getPoints()).toEqual([new Point(30,10), new Point(30,40), new Point(40,40), new Point(40,10)])
     })
 
-    it('union tpuching', () => {
+    it('union touching', () => {
         let face1 = Face.rect(new Point(0, 0), new Point(10, 10));
         let face2 = Face.rect(new Point(10, 10), new Point(20, 20));
 
         let union = face1.union(face2);
 
-        expect(union.length).toBe(2);
+        expect(union.length).toBe(1);
         expect(union[0]).toBeInstanceOf(Face);
-        expect(union[1]).toBeInstanceOf(Face);
-        expect(union[0].getPoints()).toEqual([new Point(10, 10), new Point(10, 20), new Point(20, 20), new Point(20, 10)]);
-        expect(union[1].getPoints()).toEqual([new Point(0, 0), new Point(0, 10), new Point(10, 10), new Point(10, 0)]);
+        expect(union[0].getPoints()).toEqual([new Point(0, 0), new Point(0, 10), new Point(10, 10), new Point(10, 20), new Point(20, 20), new Point(20, 10), new Point(10, 10), new Point(10, 0)]);
+    })
+
+    it('union touching2', () => {
+        let face1 = Face.rect(new Point(0, 0), new Point(10, 10));
+        let face2 = Face.rect(new Point(10, 10), new Point(20, 20));
+
+        let union = face2.union(face1);
+
+        expect(union.length).toBe(1);
+        expect(union[0]).toBeInstanceOf(Face);
+        expect(union[0].getPoints()).toEqual([new Point(0, 0), new Point(0, 10), new Point(10, 10), new Point(10, 20), new Point(20, 20), new Point(20, 10), new Point(10, 10), new Point(10, 0)]);
     })
 
     it('union with self-crossing polygon 2', () => {
@@ -508,6 +492,18 @@ describe('face', () => {
         // expect(setminus[1].getPoints()).toEqual([new Point(30,10), new Point(30,40), new Point(40,40), new Point(40,10)])
     })
 
+    it('union with self-crossing polygon 2', () => {
+        let face1 = new Face(new Point(45, 0), new Point(45, 70), new Point(90, 70), new Point(90, 0));
+        let face2 = new Face(new Point(0, 0), new Point(70, 0), new Point(0, 70), new Point(70, 70));
+
+        let union = face2.union(face1);
+
+        expect(union.length).toBe(1);
+        expect(union[0]).toBeInstanceOf(Face);
+        expect(union[0].getPoints().length).toEqual(5)
+        // expect(setminus[1].getPoints()).toEqual([new Point(30,10), new Point(30,40), new Point(40,40), new Point(40,10)])
+    })
+
     it('setminus', () => {
         let face1 = new Face(new Point(455, 105), new Point(466.6666666667, 110.8333333334), new Point(478.3333333333, 116.6666666667));
         let face2 = new Face(new Point(350, 245), new Point(595, 70), new Point(455, 105), new Point(478, 116));
@@ -519,11 +515,11 @@ describe('face', () => {
     })
 
     it('removeUnesseccaryPoints', () => {
-        let face = new Face(new Point(0,0) , new Point(0,70) , new Point(70,70) , new Point(70,35) , new Point(35,35) , new Point(35,105) , new Point(105,105) , new Point(105,0));
+        let face = new Face(new Point(0, 0), new Point(0, 70), new Point(70, 70), new Point(70, 35), new Point(35, 35), new Point(35, 105), new Point(105, 105), new Point(105, 0));
 
-        face = face.removeUnnecessaryPoints();
+        face = face.removeInnerEdges().removeUnnecessaryPoints();
 
         expect(face).toBeInstanceOf(Face);
-        expect(face.getPoints()).toEqual([new Point(0,0), new Point(0,70), new Point(35,70), new Point(35,105), new Point(105,105), new Point(105,0)]);
+        expect(face.getPoints()).toEqual([new Point(0, 0), new Point(0, 70), new Point(35, 70), new Point(35, 105), new Point(105, 105), new Point(105, 0)]);
     })
 });

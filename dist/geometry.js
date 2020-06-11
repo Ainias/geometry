@@ -14,5 +14,6 @@ __exportStar(require("./Geometry/Face"), exports);
 __exportStar(require("./Geometry/Line"), exports);
 __exportStar(require("./Geometry/Point"), exports);
 __exportStar(require("./Geometry/Polygon"), exports);
+__exportStar(require("./Geometry/Polygon_old"), exports);
 __exportStar(require("./Geometry/Rect"), exports);
 //# sourceMappingURL=geometry.js.map

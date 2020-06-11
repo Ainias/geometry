@@ -1,11 +1,10 @@
 export declare class Face {
+    static COLLISION_NONE: number;
     static COLLISION_INSIDE: number;
     static COLLISION_INSIDE_OTHER: number;
     static COLLISION_INTERSECTS: number;
-    static COLLISION_NO_INTERSECTION: number;
     static COLLISION_TOUCHING: number;
-    static COLLISION_TOUCHING_INSIDE: number;
-    static COLLISION_TOUCHING_INSIDE_OTHER: number;
+    static COLLISION_POINT: number;
     _points: any;
     constructor(...points: any[]);
     setPoints(points: any): void;
@@ -16,6 +15,7 @@ export declare class Face {
     containsPoint(point: any, withTouching?: any): any;
     _getPointInside(): any;
     checkCollision(otherFace: any): number;
+    removeInnerEdges(): this;
     removeUnnecessaryPoints(): this;
     setminus(other: any): any[];
     union(...others: any[]): any;

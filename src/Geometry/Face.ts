@@ -5,13 +5,12 @@ import {Random} from "js-helper/dist/shared/Random";
 
 export class Face {
 
+    static COLLISION_NONE = 0;
     static COLLISION_INSIDE = 1;
     static COLLISION_INSIDE_OTHER = 2;
-    static COLLISION_INTERSECTS = 3;
-    static COLLISION_NO_INTERSECTION = 4;
-    static COLLISION_TOUCHING = 5;
-    static COLLISION_TOUCHING_INSIDE = 6;
-    static COLLISION_TOUCHING_INSIDE_OTHER = 7;
+    static COLLISION_INTERSECTS = 4;
+    static COLLISION_TOUCHING = 8;
+    static COLLISION_POINT = 16;
 
     _points;
 
@@ -149,9 +148,10 @@ export class Face {
             } else if (otherFace.containsPoint(this.getLastPoint())) { //If another contains one
                 return Face.COLLISION_INSIDE_OTHER;
             } else { //if none contains another
-                return Face.COLLISION_NO_INTERSECTION;
+                return 0;
             }
         } else {
+            let collisionStatus = Face.COLLISION_TOUCHING;
             let lines = one.getLines();
             let linesOther = other.getLines();
 
@@ -159,27 +159,32 @@ export class Face {
             let otherIsInThis = linesOther.some(l => this.containsPoint(l.getCenter(), false));
             if (isInOther
                 && otherIsInThis) {
-                return Face.COLLISION_INTERSECTS;
+                return (collisionStatus | Face.COLLISION_INTERSECTS);
             } else {
-                if (otherIsInThis) {
-                    return Face.COLLISION_TOUCHING_INSIDE;
-                } else if (isInOther) {
-                    return Face.COLLISION_TOUCHING_INSIDE_OTHER;
-                } else if (this.containsPoint(other._getPointInside())){
-                    return Face.COLLISION_TOUCHING_INSIDE;
+
+                let [intersections] = Face._getIntersections(this.getLines(), otherFace.getLines());
+                // @ts-ignore
+                if (Object.values(intersections).every(i => i.map(i => i.p).filter((p, i, points) => Point.indexOf(points, p) === i).length < 2)) {
+                    collisionStatus = collisionStatus | Face.COLLISION_POINT;
                 }
-                else {
-                    return Face.COLLISION_TOUCHING;
+
+                if (otherIsInThis) {
+                    return (collisionStatus | Face.COLLISION_INSIDE);
+                } else if (isInOther) {
+                    return (collisionStatus | Face.COLLISION_INSIDE_OTHER);
+                } else if (this.containsPoint(other._getPointInside())) {
+                    return (collisionStatus | Face.COLLISION_INSIDE);
+                } else {
+                    return collisionStatus;
                 }
             }
         }
     }
 
-    removeUnnecessaryPoints() {
-        const roundFactor = 10000000000;
-
+    removeInnerEdges(){
         //Remove polygons inside
         let points = [];
+        let faces = [];
         let lines = this.cutLines(this.getLines());
         lines.forEach(l => points.push(l.p1));
 
@@ -187,21 +192,32 @@ export class Face {
             let p = points[i];
             let otherIndex = Point.indexOf(points, p, i + 1);
             if (otherIndex !== -1) {
-                let innerPoints = points.splice(i + 1, otherIndex -i);
+                let innerPoints = points.splice(i + 1, otherIndex - i);
                 let newFace = new Face(...innerPoints);
-                if (new Face(...points).checkCollision(newFace) !== Face.COLLISION_TOUCHING_INSIDE) {
-                    points.splice(i + 1, 0, ...innerPoints);
+                if ((new Face(...points).checkCollision(newFace) & Face.COLLISION_INSIDE) === 0) {
+                    // points.splice(i + 1, 0, ...innerPoints);
+                    faces.push(newFace);
                 }
             }
         }
         this.setPoints(points);
+        let newFaces = this.union(...faces);
+        if (newFaces.length >=2){
+            throw new Error("should not be possible!");
+        }
+        this.setPoints(newFaces[0].getPoints());
+        return this;
+    }
+
+    removeUnnecessaryPoints() {
+        const roundFactor = 10000000000;
 
         //concat lines with same gradient
-        points = [];
-        lines = this.getLines();
+        let points = [];
+        let lines = this.getLines();
         lines.forEach((l, i) => {
             let nextLine = lines[(i + 1) % lines.length];
-            if (Math.round(nextLine.getGradient()*roundFactor)/roundFactor !== Math.round(l.getGradient()*roundFactor)/roundFactor) {
+            if (Math.round(nextLine.getGradient() * roundFactor) / roundFactor !== Math.round(l.getGradient() * roundFactor) / roundFactor) {
                 points.push(l.p2);
             }
         });
@@ -214,10 +230,9 @@ export class Face {
 
         other = other.removeUnnecessaryPoints();
         let self = this.removeUnnecessaryPoints()
-        if (other.getPoints().length <= 2){
+        if (other.getPoints().length <= 2) {
             return [this];
-        }
-        else if (self.getPoints().length <= 2){
+        } else if (self.getPoints().length <= 2) {
             return [];
         }
 
@@ -329,15 +344,14 @@ export class Face {
 
     union(...others) {
         if (others.length === 0) {
-            return this.split();
+            return [this];
         }
 
         let self = this.removeUnnecessaryPoints();
         let other = others[0].removeUnnecessaryPoints();
-        if (other.getPoints().length <= 2){
+        if (other.getPoints().length <= 2) {
             return this.union(...others.slice(1))
-        }
-        else if (self.getPoints().length <= 2){
+        } else if (self.getPoints().length <= 2) {
             // return other.union(...others.slice(1))
             return [];
         }
@@ -410,10 +424,9 @@ export class Face {
 
         let self = this.removeUnnecessaryPoints();
         let other = others[0].removeUnnecessaryPoints();
-        if (other.getPoints().length <= 2){
+        if (other.getPoints().length <= 2) {
             return this.intersection(...others.slice(1))
-        }
-        else if (self.getPoints().length <= 2){
+        } else if (self.getPoints().length <= 2) {
             return [];
         }
 
