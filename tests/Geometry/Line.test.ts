@@ -1,5 +1,6 @@
 import {Point} from "../../src/Geometry/Point";
 import {Line} from "../../src/Geometry/Line";
+import {Face} from "../../src/Geometry/Face";
 
 describe('line', () => {
     it('contains 1', () => {
@@ -126,5 +127,14 @@ describe('line', () => {
         let p = new Point(-1,0);
 
         expect(line.containsPoint(p)).toBe(false);
+    })
+
+    fit('combine array', () => {
+        let lines1 = Face.rect(new Point(0,0), new Point(10,10)).getLines();
+        let lines2 = Face.rect(new Point(5,10), new Point(10,20)).getLines();
+
+        let lines = Line.combineArrays(lines2, lines1);
+
+        expect(lines.length).toBe(7);
     })
 });

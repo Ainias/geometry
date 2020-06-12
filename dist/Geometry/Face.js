@@ -178,7 +178,7 @@ let Face = /** @class */ (() => {
                 }
             }
             this.setPoints(points);
-            let newFaces = this.union(...faces);
+            let newFaces = Face.arrayUnion(this, ...faces);
             if (newFaces.length >= 2) {
                 throw new Error("should not be possible!");
             }
@@ -487,6 +487,17 @@ let Face = /** @class */ (() => {
         }
         cutLinesWithin(lines) {
             return this.cutLines(lines).filter(l => this.containsPoint(l.getCenter()));
+        }
+        static arrayUnion(...faces) {
+            let lengthBefore = faces.length;
+            if (lengthBefore === 0) {
+                return [];
+            }
+            do {
+                lengthBefore = faces.length;
+                faces = faces[0].union(...faces.slice(1));
+            } while (lengthBefore > faces.length);
+            return faces;
         }
         static rect(p1, p2) {
             return new Face(p1.copy(), p1.copy().setY(p2.y), p2.copy(), p1.copy().setX(p2.x));

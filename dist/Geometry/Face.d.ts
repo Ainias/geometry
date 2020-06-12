@@ -23,6 +23,7 @@ export declare class Face {
     cutLines(lines: any): any[];
     cutLinesOutside(lines: any): any[];
     cutLinesWithin(lines: any): any[];
+    static arrayUnion(...faces: any[]): any[];
     static rect(p1: any, p2: any): Face;
     static _getNextPoint(inVector: any, referencePoint: any, points: any, useSmallestAngle?: any): any;
     static _getIntersections(lines1: any, lines2: any): {}[];

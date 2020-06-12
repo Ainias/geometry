@@ -514,7 +514,7 @@ describe('face', () => {
         expect(setminus[0]).toBeInstanceOf(Face);
     })
 
-    it('removeUnesseccaryPoints', () => {
+    it('removeUnnecessaryPoints', () => {
         let face = new Face(new Point(0, 0), new Point(0, 70), new Point(70, 70), new Point(70, 35), new Point(35, 35), new Point(35, 105), new Point(105, 105), new Point(105, 0));
 
         face = face.removeInnerEdges().removeUnnecessaryPoints();
