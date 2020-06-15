@@ -129,12 +129,12 @@ describe('line', () => {
         expect(line.containsPoint(p)).toBe(false);
     })
 
-    fit('combine array', () => {
+    it('combine array', () => {
         let lines1 = Face.rect(new Point(0,0), new Point(10,10)).getLines();
         let lines2 = Face.rect(new Point(5,10), new Point(10,20)).getLines();
 
         let lines = Line.combineArrays(lines2, lines1);
 
-        expect(lines.length).toBe(7);
+        expect(lines.length).toBe(6);
     })
 });

@@ -7,11 +7,12 @@ export declare class Line {
     length(): number;
     getGradient(): number;
     set(p1: any, p2: any): void;
-    equals(other: any, direction: any): boolean;
+    equals(other: any, direction?: any): boolean;
     containsPoint(p: any): boolean;
     getIntersectionPointsWith(other: any): any[];
     getVector(): Point;
     combine(other: any): any[];
     getCenter(): Point;
+    getOrthogonalVector(): Point;
     static combineArrays(lines: any, linesOther: any): any;
 }

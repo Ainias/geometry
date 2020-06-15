@@ -145,6 +145,9 @@ class Polygon {
         });
         return newPolygons;
     }
+    static circle(center, radius, numPoints) {
+        return new Polygon(Face_1.Face.circle(center, radius, numPoints));
+    }
     static arrayUnion(...polygons) {
         let lengthBefore = polygons.length;
         if (lengthBefore === 0) {

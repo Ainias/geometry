@@ -32,7 +32,7 @@ export class Line {
         }
     }
 
-    equals(other, direction) {
+    equals(other, direction?) {
         direction = Helper.nonNull(direction, true);
         return (this.p1.equals(other.p1) && this.p2.equals(other.p2)) || (!direction && this.p1.equals(other.p2) && this.p2.equals(other.p1))
     }
@@ -45,7 +45,7 @@ export class Line {
                 return false;
             }
         } else if (this._gradient === 0) {
-             return (diff.y === 0 && ((p.x >= this.p1.x && p.x <= this.p2.x) || (p.x <= this.p1.x && p.x >= this.p2.x)));
+            return (diff.y === 0 && ((p.x >= this.p1.x && p.x <= this.p2.x) || (p.x <= this.p1.x && p.x >= this.p2.x)));
         } else if (this.p1.y + diff.x * this._gradient !== p.y) {
             return false;
         }
@@ -105,36 +105,57 @@ export class Line {
         return this.p2.copy().substract(this.p1)
     }
 
-    combine(other){
-        if (Math.abs(other._gradient) !== Math.abs(this._gradient)){
+    combine(other) {
+        if (Math.abs(other._gradient) !== Math.abs(this._gradient)) {
             return [this, other];
         }
 
         let intersectionPoints = this.getIntersectionPointsWith(other);
-        if (intersectionPoints.length > 0){
-            //Should be exactly 2
-            let points = [other.p1, other.p2, this.p1, this.p2].filter(p => Point.indexOf(intersectionPoints, p) !== -1);
-            return [new Line(points[0], points[1])];
-        }
-        else {
+        if (intersectionPoints.length > 0) {
+            let possiblePoints = [other.p1, other.p2, this.p1, this.p2];
+            let points = [0, 1, 2, 3].filter(i => Point.indexOf(intersectionPoints, possiblePoints[i]) === -1);
+            if (points.length === 2) {
+                return [new Line(possiblePoints[points[0]], possiblePoints[points[1]])];
+            }
+            //one line is inside other
+            else if (points.length === 1) {
+                let point = points[0] - (points[0] % 2);
+                return [new Line(possiblePoints[point], possiblePoints[point + 1])];
+            }
+            //both lines are equal
+            else {
+                return [this];
+            }
+        } else {
             return [this, other];
         }
     }
 
-    getCenter(){
+    getCenter() {
         return this.p1.copy().add(this.getVector().divide(2));
     }
 
-    static combineArrays(lines, linesOther){
+    getOrthogonalVector() {
+        let vector = this.getVector();
+        if (vector.equals(new Point(0, 0))) {
+            return new Point(1, 1).normalize();
+        } else if (vector.y === 0) {
+            return new Point(0, 1);
+        } else {
+            let y = (vector.x / vector.y);
+            return new Point(-1, y).normalize();
+        }
+    }
+
+    static combineArrays(lines, linesOther) {
         let oldLines = linesOther;
         lines.forEach(line => {
             let newLines = [];
             oldLines.forEach(l => {
                 let combinedLines = line.combine(l);
-                if (combinedLines.length === 1){
+                if (combinedLines.length === 1) {
                     line = combinedLines[0];
-                }
-                else {
+                } else {
                     newLines.push(combinedLines[1]);
                 }
             });

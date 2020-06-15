@@ -100,9 +100,20 @@ class Line {
         }
         let intersectionPoints = this.getIntersectionPointsWith(other);
         if (intersectionPoints.length > 0) {
-            //Should be exactly 2
-            let points = [other.p1, other.p2, this.p1, this.p2].filter(p => Point_1.Point.indexOf(intersectionPoints, p) !== -1);
-            return [new Line(points[0], points[1])];
+            let possiblePoints = [other.p1, other.p2, this.p1, this.p2];
+            let points = [0, 1, 2, 3].filter(i => Point_1.Point.indexOf(intersectionPoints, possiblePoints[i]) === -1);
+            if (points.length === 2) {
+                return [new Line(possiblePoints[points[0]], possiblePoints[points[1]])];
+            }
+            //one line is inside other
+            else if (points.length === 1) {
+                let point = points[0] - (points[0] % 2);
+                return [new Line(possiblePoints[point], possiblePoints[point + 1])];
+            }
+            //both lines are equal
+            else {
+                return [this];
+            }
         }
         else {
             return [this, other];
@@ -110,6 +121,19 @@ class Line {
     }
     getCenter() {
         return this.p1.copy().add(this.getVector().divide(2));
+    }
+    getOrthogonalVector() {
+        let vector = this.getVector();
+        if (vector.equals(new Point_1.Point(0, 0))) {
+            return new Point_1.Point(1, 1).normalize();
+        }
+        else if (vector.y === 0) {
+            return new Point_1.Point(0, 1);
+        }
+        else {
+            let y = (vector.x / vector.y);
+            return new Point_1.Point(-1, y).normalize();
+        }
     }
     static combineArrays(lines, linesOther) {
         let oldLines = linesOther;

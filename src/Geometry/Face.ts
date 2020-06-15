@@ -130,6 +130,9 @@ export class Face {
 
     _getPointInside() {
         let points = this._points;
+        if (points.length <= 2) {
+            return null;
+        }
         for (let i = 0; i < points.length; i++) {
             let otherIndex = (i + 2) % points.length;
             let p = points[i].copy().add(points[otherIndex].copy().substract(points[i]).multiply(0.5));
@@ -181,7 +184,12 @@ export class Face {
         }
     }
 
-    removeInnerEdges(){
+    removeInnerEdges() {
+
+        if (this._points.length <= 2 || this._getPointInside() === null) {
+            return this;
+        }
+
         //Remove polygons inside
         let points = [];
         let faces = [];
@@ -194,7 +202,8 @@ export class Face {
             if (otherIndex !== -1) {
                 let innerPoints = points.splice(i + 1, otherIndex - i);
                 let newFace = new Face(...innerPoints);
-                if ((new Face(...points).checkCollision(newFace) & Face.COLLISION_INSIDE) === 0) {
+                let otherFace = new Face(...points);
+                if (newFace._getPointInside() !== null && otherFace._getPointInside() !== null && (otherFace.checkCollision(newFace) & Face.COLLISION_INSIDE) === 0) {
                     // points.splice(i + 1, 0, ...innerPoints);
                     faces.push(newFace);
                 }
@@ -202,7 +211,7 @@ export class Face {
         }
         this.setPoints(points);
         let newFaces = Face.arrayUnion(this, ...faces);
-        if (newFaces.length >=2){
+        if (newFaces.length >= 2) {
             throw new Error("should not be possible!");
         }
         this.setPoints(newFaces[0].getPoints());
@@ -561,6 +570,17 @@ export class Face {
             faces = faces[0].union(...faces.slice(1));
         } while (lengthBefore > faces.length);
         return faces;
+    }
+
+    static circle(center, radius, numPoints) {
+        numPoints = numPoints || 24;
+
+        let angle = 2 * Math.PI / numPoints;
+        let points = [];
+        for (let i = 0; i < numPoints; i++) {
+            points.push(new Point(center.x + radius * Math.cos(angle * i), center.y + radius * Math.sin(angle * i)));
+        }
+        return new Face(...points);
     }
 
     static rect(p1, p2) {

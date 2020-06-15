@@ -106,6 +106,9 @@ let Face = /** @class */ (() => {
         }
         _getPointInside() {
             let points = this._points;
+            if (points.length <= 2) {
+                return null;
+            }
             for (let i = 0; i < points.length; i++) {
                 let otherIndex = (i + 2) % points.length;
                 let p = points[i].copy().add(points[otherIndex].copy().substract(points[i]).multiply(0.5));
@@ -160,6 +163,9 @@ let Face = /** @class */ (() => {
             }
         }
         removeInnerEdges() {
+            if (this._points.length <= 2 || this._getPointInside() === null) {
+                return this;
+            }
             //Remove polygons inside
             let points = [];
             let faces = [];
@@ -171,7 +177,8 @@ let Face = /** @class */ (() => {
                 if (otherIndex !== -1) {
                     let innerPoints = points.splice(i + 1, otherIndex - i);
                     let newFace = new Face(...innerPoints);
-                    if ((new Face(...points).checkCollision(newFace) & Face.COLLISION_INSIDE) === 0) {
+                    let otherFace = new Face(...points);
+                    if (newFace._getPointInside() !== null && otherFace._getPointInside() !== null && (otherFace.checkCollision(newFace) & Face.COLLISION_INSIDE) === 0) {
                         // points.splice(i + 1, 0, ...innerPoints);
                         faces.push(newFace);
                     }
@@ -498,6 +505,15 @@ let Face = /** @class */ (() => {
                 faces = faces[0].union(...faces.slice(1));
             } while (lengthBefore > faces.length);
             return faces;
+        }
+        static circle(center, radius, numPoints) {
+            numPoints = numPoints || 24;
+            let angle = 2 * Math.PI / numPoints;
+            let points = [];
+            for (let i = 0; i < numPoints; i++) {
+                points.push(new Point_1.Point(center.x + radius * Math.cos(angle * i), center.y + radius * Math.sin(angle * i)));
+            }
+            return new Face(...points);
         }
         static rect(p1, p2) {
             return new Face(p1.copy(), p1.copy().setY(p2.y), p2.copy(), p1.copy().setX(p2.x));

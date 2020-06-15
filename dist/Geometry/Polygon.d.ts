@@ -12,6 +12,7 @@ export declare class Polygon {
     union(...others: any[]): any;
     setminus(...others: any[]): any;
     intersection(...others: any[]): any[];
+    static circle(center: any, radius: any, numPoints: any): Polygon;
     static arrayUnion(...polygons: any[]): any[];
     static rect(p1: any, p2: any): Polygon;
     __getSourceCode(index: any, parentArray?: any): string;
