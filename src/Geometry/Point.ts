@@ -1,24 +1,26 @@
 import {Helper} from "js-helper/dist/shared/Helper";
 import {Rect} from "./Rect";
+import {GeometryBase} from "./GeometryBase";
 
-export class Point {
+export class Point extends GeometryBase{
 
     x: number;
     y: number;
 
-    constructor(x?, y?) {
-        this.x = Helper.nonNull(x, 0);
-        this.y = Helper.nonNull(y, 0);
+    constructor(x?, y?, precision?) {
+        super(precision);
+        this.x = Helper.nonNull(this._roundToPrecision(x), 0);
+        this.y = Helper.nonNull(this._roundToPrecision(y), 0);
     }
 
     copy() {
-        return new Point(this.x, this.y);
+        return new Point(this.x, this.y, this._precision);
     }
 
     multiply(factorOrPoint) {
 
-        let factorX = null;
-        let factorY = null;
+        let factorX;
+        let factorY;
         if (factorOrPoint instanceof Point) {
             factorX = factorOrPoint.x;
             factorY = factorOrPoint.y;
@@ -27,14 +29,14 @@ export class Point {
             factorY = factorOrPoint;
         }
 
-        this.x *= factorX;
-        this.y *= factorY;
+        this.x = this._roundToPrecision(this.x*factorX);
+        this.y = this._roundToPrecision(this.y*factorY);
 
         return this;
     }
 
     crossProduct(other) {
-        return this.x * other.y - this.y * other.x;
+        return this._roundToPrecision(this.x * other.y - this.y * other.x);
     }
 
     scalarProduct(other) {
@@ -50,8 +52,8 @@ export class Point {
 
     divide(dividerOrPoint) {
 
-        let dividerX = null;
-        let dividerY = null;
+        let dividerX;
+        let dividerY;
         if (dividerOrPoint instanceof Point) {
             dividerX = dividerOrPoint.x;
             dividerY = dividerOrPoint.y;
@@ -60,15 +62,8 @@ export class Point {
             dividerY = dividerOrPoint;
         }
 
-        this.x /= dividerX;
-        this.y /= dividerY;
-
-        return this;
-    }
-
-    intval() {
-        this.x = Math.floor(this.x);
-        this.y = Math.floor(this.y);
+        this.x = this._roundToPrecision(this.x/dividerX);
+        this.y = this._roundToPrecision(this.y/dividerY);
 
         return this;
     }
@@ -78,7 +73,7 @@ export class Point {
     }
 
     productOfParts() {
-        return this.x * this.y;
+        return this._roundToPrecision(this.x * this.y);
     }
 
     round(onDecimal?) {
@@ -92,7 +87,6 @@ export class Point {
 
     ceil() {
         this.x = Math.ceil(this.x);
-
         this.y = Math.ceil(this.y);
 
         return this;
@@ -111,8 +105,8 @@ export class Point {
             xOrPoint = xOrPoint.x;
         }
 
-        this.x += xOrPoint;
-        this.y += y;
+        this.x += this._roundToPrecision(xOrPoint);
+        this.y += this._roundToPrecision(y);
 
         return this;
     }
@@ -121,7 +115,7 @@ export class Point {
         if (x instanceof Point) {
             x = x.x;
         }
-        this.x += x;
+        this.x += this._roundToPrecision(x);
         return this;
     }
 
@@ -129,7 +123,7 @@ export class Point {
         if (y instanceof Point) {
             y = y.y;
         }
-        this.y += y;
+        this.y += this._roundToPrecision(y);
         return this;
     }
 
@@ -140,8 +134,8 @@ export class Point {
             xOrPoint = xOrPoint.x;
         }
 
-        this.x -= xOrPoint;
-        this.y -= y;
+        this.x -= this._roundToPrecision(xOrPoint);
+        this.y -= this._roundToPrecision(y);
 
         return this;
     }
@@ -150,7 +144,7 @@ export class Point {
         if (x instanceof Point) {
             x = x.x;
         }
-        this.x -= x;
+        this.x -= this._roundToPrecision(x);
         return this;
     }
 
@@ -158,7 +152,7 @@ export class Point {
         if (y instanceof Point) {
             y = y.y;
         }
-        this.y -= y;
+        this.y -= this._roundToPrecision(y);
         return this;
     }
 
@@ -169,19 +163,19 @@ export class Point {
             xOrPoint = xOrPoint.x;
         }
 
-        this.x = xOrPoint;
-        this.y = y;
+        this.x = this._roundToPrecision(xOrPoint);
+        this.y = this._roundToPrecision(y);
 
         return this;
     }
 
     setX(x) {
-        this.x = x;
+        this.x = this._roundToPrecision(x);
         return this;
     }
 
     setY(y) {
-        this.y = y;
+        this.y = this._roundToPrecision(y);
         return this;
     }
 
@@ -251,16 +245,12 @@ export class Point {
         return !this.smallerYThan(yOrOther);
     }
 
-    equals(other, delta?) {
+    equals(other) {
         if (!(other instanceof Point)) {
             return false;
         }
 
-        delta = Helper.nonNull(delta, 0.0000000001);
-
-        let deltaPoint = this.copy().substract(other).abs();
-        return deltaPoint.x <= delta
-            && deltaPoint.y <= delta;
+        return this.x === other.x && this.y === other.y;
     }
 
     bound(rect) {
@@ -274,32 +264,17 @@ export class Point {
 
     swapDimensions() {
         let tmp = this.x;
-        // noinspection JSSuspiciousNameCombination
         this.x = this.y;
         this.y = tmp;
         return this;
     }
 
     length() {
-        return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2));
+        return this._roundToPrecision(Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2)));
     }
 
     toArray() {
         return [this.x, this.y];
-    }
-
-    static max(...points) {
-        let x = [];
-        let y = [];
-        points.forEach(p => {
-            x.push(p.x);
-            y.push(p.y);
-        })
-
-        return new Point(
-            Math.max(...x),
-            Math.max(...y),
-        )
     }
 
     static singleFromArray(pointArray) {
@@ -315,6 +290,20 @@ export class Point {
 
     static toArray(points) {
         return points.map(p => p.toArray());
+    }
+
+    static max(...points) {
+        let x = [];
+        let y = [];
+        points.forEach(p => {
+            x.push(p.x);
+            y.push(p.y);
+        })
+
+        return new Point(
+            Math.max(...x),
+            Math.max(...y),
+        )
     }
 
     static min(...points) {
@@ -344,8 +333,7 @@ export class Point {
     }
 
     static angleOf(p1, p2) {
-        const accuracy = 10000000000;
-        let scalarProduct = Math.round((p1.copy().normalize().scalarProduct(p2.copy().normalize()))*accuracy)/accuracy;
+        let scalarProduct = p1.copy().normalize().scalarProduct(p2.copy().normalize());
         return Math.acos( scalarProduct);
     }
 }

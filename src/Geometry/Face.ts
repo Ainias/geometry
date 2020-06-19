@@ -2,8 +2,9 @@ import {Point} from "./Point";
 import {Helper} from "js-helper/dist/shared/Helper";
 import {Line} from "./Line";
 import {Random} from "js-helper/dist/shared/Random";
+import {GeometryBase} from "./GeometryBase";
 
-export class Face {
+export class Face extends GeometryBase {
 
     static COLLISION_NONE = 0;
     static COLLISION_INSIDE = 1;
@@ -15,6 +16,7 @@ export class Face {
     _points;
 
     constructor(...points) {
+        super();
         this.setPoints(points);
     }
 
@@ -219,14 +221,13 @@ export class Face {
     }
 
     removeUnnecessaryPoints() {
-        const roundFactor = 10000000000;
 
         //concat lines with same gradient
         let points = [];
         let lines = this.getLines();
         lines.forEach((l, i) => {
             let nextLine = lines[(i + 1) % lines.length];
-            if (Math.round(nextLine.getGradient() * roundFactor) / roundFactor !== Math.round(l.getGradient() * roundFactor) / roundFactor) {
+            if (nextLine.getGradient()!== l.getGradient()) {
                 points.push(l.p2);
             }
         });
@@ -246,7 +247,6 @@ export class Face {
         }
 
         let [one, another] = Face._getFacesWithIntersectionPoints(self, other);
-
 
         //No intersection found
         if (one === this) {
@@ -385,7 +385,7 @@ export class Face {
         let reference = Point.min(...points, ...pointsOther);
 
         let lines = [];
-        let startingPoint;
+        let startingPoint = null;
         let smallestLength = null;
         let _pointCallback = (p, i, points) => {
             let length = new Line(p, reference).length();

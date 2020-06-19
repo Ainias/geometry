@@ -1,4 +1,5 @@
-export declare class Face {
+import { GeometryBase } from "./GeometryBase";
+export declare class Face extends GeometryBase {
     static COLLISION_NONE: number;
     static COLLISION_INSIDE: number;
     static COLLISION_INSIDE_OTHER: number;

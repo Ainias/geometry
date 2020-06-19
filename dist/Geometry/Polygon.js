@@ -4,8 +4,10 @@ exports.Polygon = void 0;
 const Helper_1 = require("js-helper/dist/shared/Helper");
 const Face_1 = require("./Face");
 const Counter_1 = require("js-helper/dist/shared/Counter");
-class Polygon {
-    constructor(face, holes) {
+const GeometryBase_1 = require("./GeometryBase");
+class Polygon extends GeometryBase_1.GeometryBase {
+    constructor(face, holes, precision) {
+        super(precision);
         face = Helper_1.Helper.nonNull(face, []);
         holes = Helper_1.Helper.nonNull(holes, []);
         if (face instanceof Array) {
@@ -75,6 +77,7 @@ class Polygon {
             if (others.length === 0) {
                 return [other, this];
             }
+            //TODO permanent recursion if this is unioned with at least two polygons that are all not touching
             return other.union(...this.union(...others));
         }
         let newFaces = this.getFace().union(other.getFace());

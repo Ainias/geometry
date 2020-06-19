@@ -1,13 +1,16 @@
 import {Helper} from "js-helper/dist/shared/Helper";
 import {Face} from "./Face";
 import {Counter} from "js-helper/dist/shared/Counter";
+import {GeometryBase} from "./GeometryBase";
 
-export class Polygon {
+export class Polygon extends GeometryBase{
 
     _face;
     _holes;
 
-    constructor(face?, holes?) {
+    constructor(face?, holes?, precision?) {
+        super(precision);
+
         face = Helper.nonNull(face, []);
         holes = Helper.nonNull(holes, []);
 
@@ -92,6 +95,7 @@ export class Polygon {
             if (others.length === 0){
                 return [other, this];
             }
+            //TODO permanent recursion if this is unioned with at least two polygons that are all not touching
             return other.union(...this.union(...others));
         }
 

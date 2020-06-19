@@ -3,8 +3,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Rect = void 0;
 const Point_1 = require("./Point");
 const Helper_1 = require("js-helper/dist/shared/Helper");
-class Rect {
-    constructor(p1, p2) {
+const GeometryBase_1 = require("./GeometryBase");
+class Rect extends GeometryBase_1.GeometryBase {
+    constructor(p1, p2, precision) {
+        super(precision);
         this.p1 = new Point_1.Point();
         this.p2 = new Point_1.Point();
         this.set(p1, p2);
@@ -52,90 +54,9 @@ class Rect {
             (this.p2.y < other.p1.y) ||
             (this.p1.y > other.p2.y));
     }
-    equals(other, delta) {
-        return this.p1.equals(other.p1, delta)
-            && this.p2.equals(other.p2, delta);
-    }
-    splitIntoSingleRects() {
-        let singleRects = [];
-        for (let x = this.p1.x; x < this.p2.x; x++) {
-            for (let y = this.p1.y; y < this.p2.y; y++) {
-                singleRects.push(new Rect(new Point_1.Point(x, y), new Point_1.Point(x + 1, y + 1)));
-            }
-        }
-        return singleRects;
-    }
-    forEachPoint(callback) {
-        for (let x = this.p1.x; x <= this.p2.x; x++) {
-            for (let y = this.p1.y; y <= this.p2.y; y++) {
-                callback(new Point_1.Point(x, y), this);
-            }
-        }
-    }
-    every(callback) {
-        for (let x = this.p1.x; x <= this.p2.x; x++) {
-            for (let y = this.p1.y; y <= this.p2.y; y++) {
-                if (callback(new Point_1.Point(x, y), this) !== true) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-    some(callback) {
-        for (let x = this.p1.x; x <= this.p2.x; x++) {
-            for (let y = this.p1.y; y <= this.p2.y; y++) {
-                if (callback(new Point_1.Point(x, y), this) === true) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-    static isInsideOneRect(rects, ...point) {
-        return rects.some(rect => rect.isInside(...point));
-    }
-    static getCircumferencePath(rects, directions) {
-        if (rects.length === 0) {
-            return [];
-        }
-        rects.sort((a, b) => {
-            return (a.p1.x > b.p1.x) ? 1 : ((a.p1.x < b.p1.x) ? -1 :
-                ((a.p1.y > b.p1.y) ? 1 : ((a.p1.y < b.p1.y) ? -1 :
-                    0)));
-        });
-        let from = rects[0].p1;
-        let path = [];
-        let pathEdges = [from];
-        directions = Helper_1.Helper.nonNull(directions, [
-            new Point_1.Point(-1, 0),
-            new Point_1.Point(0, 1),
-            new Point_1.Point(1, 0),
-            new Point_1.Point(0, -1),
-        ]);
-        let directionIndex = 0;
-        let newDirectionIndex = 0;
-        let currentPos = from.copy();
-        let p = null;
-        do {
-            if (![0, 1, 2, 3].some(i => {
-                p = currentPos.copy().add(directions[(directionIndex + i) % 4]);
-                newDirectionIndex = (directionIndex + i + 3) % 4;
-                let pIndex = Point_1.Point.indexOf(path, p);
-                return (Rect.isInsideOneRect(rects, p, p.copy().add(1, 1)) && //Inside a rect
-                    (pIndex <= 0 || !currentPos.equals(path[pIndex - 1]))); //not previously taken from current position
-            })) {
-                debugger;
-                return [];
-            }
-            path.push(p);
-            if (directionIndex !== newDirectionIndex) {
-                pathEdges.push(currentPos);
-            }
-            directionIndex = newDirectionIndex;
-            currentPos = p;
-        } while (!currentPos.equals(from));
-        return pathEdges;
+    equals(other) {
+        return this.p1.equals(other.p1)
+            && this.p2.equals(other.p2);
     }
 }
 exports.Rect = Rect;

@@ -1,13 +1,15 @@
 import {Helper} from "js-helper/dist/shared/Helper";
 import {Point} from "./Point";
+import {GeometryBase} from "./GeometryBase";
 
-export class Line {
+export class Line extends GeometryBase{
 
     p1: Point;
     p2: Point;
     _gradient: number;
 
-    constructor(p1, p2) {
+    constructor(p1, p2, precision?) {
+        super(precision);
         this.set(p1, p2);
     }
 
@@ -16,7 +18,7 @@ export class Line {
     }
 
     getGradient() {
-        return this._gradient;
+        return this._roundToPrecision(this._gradient);
     }
 
     set(p1, p2) {
@@ -28,7 +30,7 @@ export class Line {
         if (diff.x === 0) {
             this._gradient = Infinity;
         } else {
-            this._gradient = diff.y / diff.x
+            this._gradient = this._roundToPrecision(diff.y / diff.x);
         }
     }
 
@@ -46,7 +48,7 @@ export class Line {
             }
         } else if (this._gradient === 0) {
             return (diff.y === 0 && ((p.x >= this.p1.x && p.x <= this.p2.x) || (p.x <= this.p1.x && p.x >= this.p2.x)));
-        } else if (this.p1.y + diff.x * this._gradient !== p.y) {
+        } else if (this._roundToPrecision(this.p1.y + diff.x * this._gradient) !== p.y) {
             return false;
         }
         let diffY = diffLine.y;
@@ -75,14 +77,14 @@ export class Line {
             //check if intersecting
             if ((factorStart0 >= 0 && factorStart0 <= 1) || (factorStart1 >= 0 && factorStart1 <= 1)) {
                 if (factorStart0 >= 0 && factorStart0 <= 1) {
-                    points.push(this.p1.copy().add(vector.copy().multiply(factorStart0)).round(10));
+                    points.push(this.p1.copy().add(vector.copy().multiply(factorStart0)));
                 } else if (factorStart0 < 0) {
                     points.push(this.p1)
                 } else {
                     points.push(this.p2);
                 }
                 if (factorStart1 >= 0 && factorStart1 <= 1) {
-                    points.push(this.p1.copy().add(vector.copy().multiply(factorStart1).round(10)));
+                    points.push(this.p1.copy().add(vector.copy().multiply(factorStart1)));
                 } else if (factorStart1 < 0) {
                     points.push(this.p1)
                 } else {
@@ -95,7 +97,7 @@ export class Line {
             let factor2 = diffCross2 / vectorCross1; //s
 
             if (factor1 >= 0 && factor1 <= 1 && factor2 >= 0 && factor2 <= 1) {
-                return [this.p1.copy().add(vector.multiply(factor1)).round(10)];
+                return [this.p1.copy().add(vector.multiply(factor1))];
             }
         }
         return [];

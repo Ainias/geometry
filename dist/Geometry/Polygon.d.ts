@@ -1,7 +1,8 @@
-export declare class Polygon {
+import { GeometryBase } from "./GeometryBase";
+export declare class Polygon extends GeometryBase {
     _face: any;
     _holes: any;
-    constructor(face?: any, holes?: any);
+    constructor(face?: any, holes?: any, precision?: any);
     getFace(): any;
     getHoles(): any;
     checkCollision(other: any): any;

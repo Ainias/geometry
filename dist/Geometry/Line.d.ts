@@ -1,9 +1,10 @@
 import { Point } from "./Point";
-export declare class Line {
+import { GeometryBase } from "./GeometryBase";
+export declare class Line extends GeometryBase {
     p1: Point;
     p2: Point;
     _gradient: number;
-    constructor(p1: any, p2: any);
+    constructor(p1: any, p2: any, precision?: any);
     length(): number;
     getGradient(): number;
     set(p1: any, p2: any): void;

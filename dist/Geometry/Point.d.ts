@@ -1,14 +1,14 @@
-export declare class Point {
+import { GeometryBase } from "./GeometryBase";
+export declare class Point extends GeometryBase {
     x: number;
     y: number;
-    constructor(x?: any, y?: any);
+    constructor(x?: any, y?: any, precision?: any);
     copy(): Point;
     multiply(factorOrPoint: any): this;
     crossProduct(other: any): number;
     scalarProduct(other: any): number;
     normalize(): this;
     divide(dividerOrPoint: any): this;
-    intval(): this;
     sumOfParts(): number;
     productOfParts(): number;
     round(onDecimal?: any): this;
@@ -36,15 +36,15 @@ export declare class Point {
     smallerEqualYThan(yOrOther: any): boolean;
     greaterEqualXThan(xOrOther: any): boolean;
     greaterEqualYThan(yOrOther: any): boolean;
-    equals(other: any, delta?: any): boolean;
+    equals(other: any): boolean;
     bound(rect: any): this;
     swapDimensions(): this;
     length(): number;
     toArray(): number[];
-    static max(...points: any[]): Point;
     static singleFromArray(pointArray: any): Point;
     static fromArray(array: any): any;
     static toArray(points: any): any;
+    static max(...points: any[]): Point;
     static min(...points: any[]): Point;
     static indexOf(pointArray: any, point: any, fromIndex?: any): number;
     static angleOf(p1: any, p2: any): number;

@@ -11,6 +11,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./Geometry/Face"), exports);
+__exportStar(require("./Geometry/GeometryBase"), exports);
 __exportStar(require("./Geometry/Line"), exports);
 __exportStar(require("./Geometry/Point"), exports);
 __exportStar(require("./Geometry/Polygon"), exports);

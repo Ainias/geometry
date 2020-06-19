@@ -1,8 +1,9 @@
 import { Point } from "./Point";
-export declare class Rect {
+import { GeometryBase } from "./GeometryBase";
+export declare class Rect extends GeometryBase {
     p1: Point;
     p2: Point;
-    constructor(p1?: any, p2?: any);
+    constructor(p1?: any, p2?: any, precision?: any);
     set(p1?: any, p2?: any): this;
     isOverlapping(other: any): boolean;
     isInside(...points: any[]): boolean;
@@ -12,11 +13,5 @@ export declare class Rect {
     getDimension(): Point;
     copy(): Rect;
     isTouching(other: any): boolean;
-    equals(other: any, delta: any): boolean;
-    splitIntoSingleRects(): any[];
-    forEachPoint(callback: any): void;
-    every(callback: any): boolean;
-    some(callback: any): boolean;
-    static isInsideOneRect(rects: any, ...point: any[]): any;
-    static getCircumferencePath(rects: any, directions: any): any[];
+    equals(other: any): boolean;
 }
