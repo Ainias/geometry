@@ -10,6 +10,12 @@ class Point extends GeometryBase_1.GeometryBase {
         this.x = Helper_1.Helper.nonNull(this._roundToPrecision(x), 0);
         this.y = Helper_1.Helper.nonNull(this._roundToPrecision(y), 0);
     }
+    getX() {
+        return this._round(this.x);
+    }
+    getY() {
+        return this._round(this.y);
+    }
     copy() {
         return new Point(this.x, this.y, this._precision);
     }
@@ -29,7 +35,7 @@ class Point extends GeometryBase_1.GeometryBase {
         return this;
     }
     crossProduct(other) {
-        return this._roundToPrecision(this.x * other.y - this.y * other.x);
+        return this._round(this.x * other.y - this.y * other.x);
     }
     scalarProduct(other) {
         return this.copy().multiply(other.copy()).sumOfParts();
@@ -56,10 +62,10 @@ class Point extends GeometryBase_1.GeometryBase {
         return this;
     }
     sumOfParts() {
-        return this.x + this.y;
+        return this._round(this.x + this.y);
     }
     productOfParts() {
-        return this._roundToPrecision(this.x * this.y);
+        return this._round(this.x * this.y);
     }
     round(onDecimal) {
         onDecimal = Helper_1.Helper.nonNull(onDecimal, 0);
@@ -200,7 +206,7 @@ class Point extends GeometryBase_1.GeometryBase {
         }
         delta = Helper_1.Helper.nonNull(delta, 0);
         let diff = this.copy().substract(other).abs();
-        return diff.x <= delta && diff.y <= delta;
+        return diff.getX() <= delta && diff.getY() <= delta;
         // return this.x === other.x && this.y === other.y;
     }
     bound(rect) {
@@ -218,7 +224,7 @@ class Point extends GeometryBase_1.GeometryBase {
         return this;
     }
     length() {
-        return this._roundToPrecision(Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2)));
+        return this._round(Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2)));
     }
     toArray() {
         return [this.x, this.y];

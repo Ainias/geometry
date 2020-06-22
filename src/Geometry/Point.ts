@@ -13,12 +13,19 @@ export class Point extends GeometryBase {
         this.y = Helper.nonNull(this._roundToPrecision(y), 0);
     }
 
+    getX(){
+        return this._round(this.x);
+    }
+
+    getY(){
+        return this._round(this.y);
+    }
+
     copy() {
         return new Point(this.x, this.y, this._precision);
     }
 
     multiply(factorOrPoint) {
-
         let factorX;
         let factorY;
         if (factorOrPoint instanceof Point) {
@@ -36,7 +43,7 @@ export class Point extends GeometryBase {
     }
 
     crossProduct(other) {
-        return this._roundToPrecision(this.x * other.y - this.y * other.x);
+        return this._round(this.x * other.y - this.y * other.x);
     }
 
     scalarProduct(other) {
@@ -69,11 +76,11 @@ export class Point extends GeometryBase {
     }
 
     sumOfParts() {
-        return this.x + this.y;
+        return this._round(this.x + this.y);
     }
 
     productOfParts() {
-        return this._roundToPrecision(this.x * this.y);
+        return this._round(this.x * this.y);
     }
 
     round(onDecimal?) {
@@ -253,7 +260,7 @@ export class Point extends GeometryBase {
         delta = Helper.nonNull(delta, 0);
 
         let diff = this.copy().substract(other).abs();
-        return diff.x <= delta && diff.y <= delta;
+        return diff.getX() <= delta && diff.getY() <= delta;
 
         // return this.x === other.x && this.y === other.y;
     }
@@ -275,7 +282,7 @@ export class Point extends GeometryBase {
     }
 
     length() {
-        return this._roundToPrecision(Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2)));
+        return this._round(Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2)));
     }
 
     toArray() {

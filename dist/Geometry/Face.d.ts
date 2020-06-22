@@ -26,7 +26,8 @@ export declare class Face extends GeometryBase {
     cutLinesWithin(lines: any): any[];
     static _glueLines(lines: any, notInFace?: any, inFace?: any): any[];
     static _removeInnerEdges(lines: any): any;
-    static circle(center: any, radius: any, numPoints: any): Face;
+    static circle(center: any, radius: any, maxDistance: any): Face;
+    static circle2(center: any, radius: any, numPoints: any): Face;
     static rect(p1: any, p2: any): Face;
     static _getIntersections(lines1: any, lines2: any): {}[];
     static _getFacesWithIntersectionPoints(one: any, another: any): any[];

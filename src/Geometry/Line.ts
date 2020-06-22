@@ -18,7 +18,7 @@ export class Line extends GeometryBase{
     }
 
     getGradient() {
-        return this._roundToPrecision(this._gradient);
+        return this._round(this._gradient);
     }
 
     set(p1, p2) {
@@ -53,7 +53,7 @@ export class Line extends GeometryBase{
             }
         } else if (this._gradient === 0) {
             return (diff.y === 0 && ((p.x >= this.p1.x && p.x <= this.p2.x) || (p.x <= this.p1.x && p.x >= this.p2.x)));
-        } else if (this._roundToPrecision(this.p1.y + diff.x * this._gradient) !== p.y) { //TODO hier sind eventuell rundungsfehler
+        } else if (this._round(this.p1.y + diff.x * this._gradient) !== p.getY()) { //TODO hier sind eventuell rundungsfehler
             return false;
         }
         let diffY = diffLine.y;

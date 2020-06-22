@@ -447,7 +447,7 @@ class Face extends GeometryBase_1.GeometryBase {
         let currentPoint = startingPoint;
         let newPoints = [];
         let line = new Line_1.Line(reference, currentPoint);
-        const delta = 2 / GeometryBase_1.GeometryBase.precision;
+        const delta = 0;
         do {
             newPoints.push(currentPoint);
             let possiblePoints = lines.filter(l => l.p1.equals(currentPoint, delta) || l.p2.equals(currentPoint, delta)).map(l => l.p1.equals(currentPoint, delta) ? l.p2 : l.p1);
@@ -504,12 +504,20 @@ class Face extends GeometryBase_1.GeometryBase {
             return [];
         }
     }
-    static circle(center, radius, numPoints) {
+    static circle(center, radius, maxDistance) {
+        maxDistance = Math.max(Helper_1.Helper.nonNull(maxDistance, 5), 1);
+        let numPoints = Math.ceil(2 * Math.PI * radius / maxDistance);
+        if (numPoints % 2 === 0) {
+            numPoints++;
+        }
+        return this.circle2(center, radius, numPoints);
+    }
+    static circle2(center, radius, numPoints) {
         numPoints = numPoints || 24;
         let angle = 2 * Math.PI / numPoints;
         let points = [];
         for (let i = 0; i < numPoints; i++) {
-            points.push(new Point_1.Point(center.x + radius * Math.cos(angle * i), center.y + radius * Math.sin(angle * i)));
+            points.push(new Point_1.Point(GeometryBase_1.GeometryBase.round(center.x + radius * Math.cos(angle * i)), GeometryBase_1.GeometryBase.round(center.y + radius * Math.sin(angle * i))));
         }
         return new Face(...points);
     }

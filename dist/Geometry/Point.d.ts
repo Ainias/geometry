@@ -3,6 +3,8 @@ export declare class Point extends GeometryBase {
     x: number;
     y: number;
     constructor(x?: any, y?: any, precision?: any);
+    getX(): number;
+    getY(): number;
     copy(): Point;
     multiply(factorOrPoint: any): this;
     crossProduct(other: any): number;
