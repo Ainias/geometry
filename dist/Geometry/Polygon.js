@@ -80,7 +80,7 @@ class Polygon extends GeometryBase_1.GeometryBase {
             let union = this.union(...others);
             //this is not intersecting with anyone, so it will not connect to any polygon in this merge
             if (union.length >= others.length + 1) {
-                return [...other.union(...others), this];
+                return [other, ...union];
             }
             else {
                 return other.union(...union);
@@ -113,6 +113,9 @@ class Polygon extends GeometryBase_1.GeometryBase {
         else if ((status & Face_1.Face.COLLISION_INSIDE_OTHER) === Face_1.Face.COLLISION_INSIDE_OTHER) {
             return [];
         }
+        else if (status === Face_1.Face.COLLISION_NONE) {
+            return this.setminus(...others.slice(1));
+        }
         let otherHolesIntersected = [];
         other.getHoles().forEach(h => otherHolesIntersected.push(...h.intersection(this)));
         this.getHoles().forEach(h => h.getHoles().forEach(i => otherHolesIntersected.push(...i.setminus(other))));
@@ -125,6 +128,7 @@ class Polygon extends GeometryBase_1.GeometryBase {
                 let collisionStatus = f.checkCollision(union.getFace());
                 if ((collisionStatus & Face_1.Face.COLLISION_INSIDE) === Face_1.Face.COLLISION_INSIDE && ((collisionStatus & Face_1.Face.COLLISION_POINT) === Face_1.Face.COLLISION_POINT || (collisionStatus & Face_1.Face.COLLISION_TOUCHING) === 0)) {
                     holes.push(union);
+                    newFaces.push(f);
                 }
                 else if ((collisionStatus & Face_1.Face.COLLISION_INTERSECTS) !== 0 || (collisionStatus & (Face_1.Face.COLLISION_TOUCHING | Face_1.Face.COLLISION_POINT)) === Face_1.Face.COLLISION_TOUCHING) {
                     newFaces.push(...f.setminus(union.getFace()));
@@ -137,6 +141,7 @@ class Polygon extends GeometryBase_1.GeometryBase {
         });
         let polygons = faces.map(f => new Polygon(f));
         polygons = Polygon.arrayUnion(...polygons, ...otherHolesIntersected);
+        holes.forEach(h => polygons.some(p => p.addHole(h)));
         let res = [];
         others = others.slice(1);
         polygons.forEach(p => {

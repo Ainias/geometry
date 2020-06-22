@@ -97,7 +97,7 @@ export class Polygon extends GeometryBase {
             let union = this.union(...others);
             //this is not intersecting with anyone, so it will not connect to any polygon in this merge
             if (union.length >= others.length + 1) {
-                return [...other.union(...others), this];
+                return [other, ...union];
             } else {
                 return other.union(...union);
             }
@@ -138,6 +138,9 @@ export class Polygon extends GeometryBase {
         } else if ((status & Face.COLLISION_INSIDE_OTHER) === Face.COLLISION_INSIDE_OTHER) {
             return [];
         }
+        else if (status === Face.COLLISION_NONE){
+            return this.setminus(...others.slice(1));
+        }
 
         let otherHolesIntersected = [];
         other.getHoles().forEach(h => otherHolesIntersected.push(...h.intersection(this)));
@@ -153,6 +156,7 @@ export class Polygon extends GeometryBase {
                 let collisionStatus = f.checkCollision(union.getFace());
                 if ((collisionStatus & Face.COLLISION_INSIDE) === Face.COLLISION_INSIDE && ((collisionStatus & Face.COLLISION_POINT) === Face.COLLISION_POINT || (collisionStatus & Face.COLLISION_TOUCHING) === 0)) {
                     holes.push(union)
+                    newFaces.push(f);
                 } else if ((collisionStatus & Face.COLLISION_INTERSECTS) !== 0 || (collisionStatus & (Face.COLLISION_TOUCHING | Face.COLLISION_POINT)) === Face.COLLISION_TOUCHING) {
                     newFaces.push(...f.setminus(union.getFace()));
                 }else if (collisionStatus === 0){
@@ -164,6 +168,8 @@ export class Polygon extends GeometryBase {
 
         let polygons = faces.map(f => new Polygon(f));
         polygons = Polygon.arrayUnion(...polygons, ...otherHolesIntersected);
+
+        holes.forEach(h => polygons.some(p => p.addHole(h)));
 
         let res = [];
         others = others.slice(1);

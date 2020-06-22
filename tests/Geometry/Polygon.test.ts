@@ -500,6 +500,66 @@ describe('polygon', () => {
         expect(union[0].getHoles().length).toBe(1);
     })
 
+    it("setminus 4", () => {
+        let holes1 = [];
+        let points1 = [new Point(35,35) , new Point(35,140) , new Point(140,140) , new Point(140,35)]
+        let polygon1 = new Polygon(points1);
+        let points2 = [new Point(70.3824,83.8615) , new Point(70.3824,91.1385) , new Point(73.3422,97.7862) , new Point(78.75,102.6554) , new Point(85.6708,104.9041) , new Point(92.9078,104.1435) , new Point(99.2098,100.505) , new Point(103.487,94.6179) , new Point(105,87.5) , new Point(103.487,80.3821) , new Point(99.2098,74.495) , new Point(92.9078,70.8565) , new Point(85.6708,70.0959) , new Point(78.75,72.3446) , new Point(73.3422,77.2138)];
+        let polygon2 = new Polygon(points2);
+        holes1.push(polygon2);
+        polygon1.setHoles(holes1);
+
+        let polygon3 = new Polygon([new Point(770.3824,293.8615) , new Point(770.3824,301.1385) , new Point(773.3422,307.7862) , new Point(778.75,312.6554) , new Point(785.6708,314.9041) , new Point(792.9078,314.1435) , new Point(799.2098,310.505) , new Point(803.487,304.6179) , new Point(805,297.5) , new Point(803.487,290.3821) , new Point(799.2098,284.495) , new Point(792.9078,280.8565) , new Point(785.6708,280.0959) , new Point(778.75,282.3446) , new Point(773.3422,287.2138)]);
+
+        let setminus = polygon1.setminus(polygon3);
+
+        expect(setminus.length).toBe(1);
+        expect(setminus[0].getFace().getPoints()).toEqual(points1)
+
+        let holes = setminus[0].getHoles();
+        expect(holes.length).toBe(1);
+        expect(holes[0].getFace().getPoints()).toEqual(points2)
+    })
+
+    it("union20", () => {
+
+        let face2 = Face.rect(new Point(5,5), new Point(10,10));
+        let face3 = Face.rect(new Point(15,15), new Point(20,20));
+        let face4 = Face.rect(new Point(5,15), new Point(10,20));
+
+        let polygon2 = new Polygon(face2);
+        let polygon3 = new Polygon(face3);
+        let polygon4 = new Polygon(face4);
+
+        let union = polygon4.union(polygon2, polygon3)
+
+        expect(union.length).toBe(3);
+        expect(union[0].getFace().getPoints()).toEqual(face2.getPoints())
+        expect(union[1].getFace().getPoints()).toEqual(face3.getPoints())
+        expect(union[2].getFace().getPoints()).toEqual(face4.getPoints())
+    })
+
+    it("setminus 4", () => {
+        let face1 = Face.rect(new Point(0,0), new Point(25,25));
+        let face2 = Face.rect(new Point(10,10), new Point(15,15));
+        let face3 = Face.rect(new Point(20,0), new Point(25,5));
+
+        let polygon1 = new Polygon(face1);
+        let polygon2 = new Polygon(face2);
+        let polygon3 = new Polygon(face3);
+
+        polygon1.setHoles([polygon2]);
+
+        let setminus = polygon1.setminus(polygon3)
+
+        expect(setminus.length).toBe(1);
+        expect(setminus[0].getFace().getPoints()).toEqual([new Point(0,0), new Point(0,25), new Point(25,25), new Point(25,5), new Point(20,5), new Point(20,0)]);
+
+        let holes = setminus[0].getHoles();
+        expect(holes.length).toBe(1);
+        expect(holes[0].getFace().getPoints()).toEqual(face2.getPoints())
+    })
+
     xit('test', () => {
         let face1 = Face.rect(new Point(5, 5), new Point(10, 10));
         let face2 = Face.rect(new Point(15, 5), new Point(20, 10));
