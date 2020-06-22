@@ -26,11 +26,14 @@ class Line extends GeometryBase_1.GeometryBase {
             this._gradient = this._roundToPrecision(diff.y / diff.x);
         }
     }
-    equals(other, direction) {
+    equals(other, direction, delta) {
         direction = Helper_1.Helper.nonNull(direction, true);
-        return (this.p1.equals(other.p1) && this.p2.equals(other.p2)) || (!direction && this.p1.equals(other.p2) && this.p2.equals(other.p1));
+        return (this.p1.equals(other.p1, delta) && this.p2.equals(other.p2, delta)) || (!direction && this.p1.equals(other.p2, delta) && this.p2.equals(other.p1, delta));
     }
     containsPoint(p) {
+        if (p.equals(this.p1) || p.equals(this.p2)) {
+            return true;
+        }
         let diff = p.copy().substract(this.p1);
         let diffLine = this.p2.copy().substract(this.p1);
         if (this._gradient === Infinity) {
@@ -41,7 +44,7 @@ class Line extends GeometryBase_1.GeometryBase {
         else if (this._gradient === 0) {
             return (diff.y === 0 && ((p.x >= this.p1.x && p.x <= this.p2.x) || (p.x <= this.p1.x && p.x >= this.p2.x)));
         }
-        else if (this._roundToPrecision(this.p1.y + diff.x * this._gradient) !== p.y) {
+        else if (this._roundToPrecision(this.p1.y + diff.x * this._gradient) !== p.y) { //TODO hier sind eventuell rundungsfehler
             return false;
         }
         let diffY = diffLine.y;
@@ -88,7 +91,7 @@ class Line extends GeometryBase_1.GeometryBase {
             let factor1 = diffCross1 / vectorCross1; //t
             let factor2 = diffCross2 / vectorCross1; //s
             if (factor1 >= 0 && factor1 <= 1 && factor2 >= 0 && factor2 <= 1) {
-                return [this.p1.copy().add(vector.multiply(factor1))];
+                return [this.p1.copy().add(vector.copy().multiply(factor1))];
             }
         }
         return [];

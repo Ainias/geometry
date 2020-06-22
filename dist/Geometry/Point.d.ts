@@ -36,7 +36,7 @@ export declare class Point extends GeometryBase {
     smallerEqualYThan(yOrOther: any): boolean;
     greaterEqualXThan(xOrOther: any): boolean;
     greaterEqualYThan(yOrOther: any): boolean;
-    equals(other: any): boolean;
+    equals(other: any, delta?: any): boolean;
     bound(rect: any): this;
     swapDimensions(): this;
     length(): number;

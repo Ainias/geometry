@@ -26,6 +26,14 @@ export class Face extends GeometryBase {
             return;
         }
 
+        this._points = points;
+        points = Face._removeInnerEdges(this.cutLines(this.getLines()));
+
+        if (points.length === 0) {
+            this._points = [];
+            return
+        }
+
         let smallestIndex = -1;
         let smallestPoint = null;
 
@@ -96,6 +104,10 @@ export class Face extends GeometryBase {
     }
 
     containsPoint(point, withTouching?) {
+        if (this._points.length < 2 || Helper.isNull(point)) {
+            return false;
+        }
+
         let min = Point.min(...this._points);
         let max = Point.max(...this._points);
 
@@ -104,41 +116,187 @@ export class Face extends GeometryBase {
         }
         withTouching = Helper.nonNull(withTouching, true);
 
-        let lineStartingPoint = new Point(min.x - 1, point.y);
+        let line = new Line(new Point(min.x - 1, point.y), point);
+        let lines = this.getLines();
 
         let count = 0;
-        let repeat = false;
-        do {
-            repeat = false;
-            count = 0;
-            let line = new Line(lineStartingPoint, point);
-            let lines = this.getLines();
-            for (let i = 0, n = lines.length; i < n; i++) {
-                let l = lines[i];
-                if (l.containsPoint(point)) {
-                    return withTouching;
+        for (let i = 0, n = lines.length; i < n; i++) {
+            let l = lines[i];
+            if (l.containsPoint(point)) {
+                return withTouching;
+            }
+            let newIntersectionPoints = line.getIntersectionPointsWith(l);
+            if (newIntersectionPoints.length === 1 && (newIntersectionPoints[0].equals(l.p1) || newIntersectionPoints[0].equals(l.p2))) {
+                if (newIntersectionPoints[0].equals(l.p1)) {
+                    continue;
                 }
-                let newIntersectionPoints = line.getIntersectionPointsWith(l);
-                if (newIntersectionPoints.length === 1 && (newIntersectionPoints[0].equals(l.p1) || newIntersectionPoints[0].equals(l.p2))) {
-                    repeat = true;
-                    lineStartingPoint.add(new Point(0, Random.getRandom() * Math.max(l.length(), 1)))
-                    break;
+                let isAbove = l.p1.y < point.y;
+                for (let j = 1; j < n; j++) {
+                    let otherLine = lines[(i + j) % n];
+                    if (otherLine.p2.y !== point.y) {
+                        if (isAbove === otherLine.p2.y > point.y) {
+                            count++;
+                        }
+                        i += j;
+                        break;
+                    } else if (otherLine.containsPoint(point)) {
+                        return withTouching;
+                    } else if (otherLine.p2.x > point.x) {
+                        i += j;
+                        break;
+                    }
                 }
+
+            } else {
                 count += newIntersectionPoints.length;
             }
-        } while (repeat === true);
+        }
         return count % 2 === 1;
     }
 
+    // containsPoint(point, withTouching?) {
+    //     if (this._points.length < 2 || Helper.isNull(point)) {
+    //         return false;
+    //     }
+    //
+    //     let min = Point.min(...this._points);
+    //     let max = Point.max(...this._points);
+    //
+    //     if (point.x < min.x || point.y < min.y || point.x > max.x || point.y > max.y) {
+    //         return false;
+    //     }
+    //     withTouching = Helper.nonNull(withTouching, true);
+    //
+    //     let distance = max.copy().substract(min);
+    //
+    //     let lineStartingPoint = new Point(min.x - 1, point.y);
+    //
+    //     let loopBreaker = 0;
+    //     let repeat;
+    //
+    //     let intersectionPoints;
+    //     do {
+    //         loopBreaker++;
+    //         if (loopBreaker > 10000){
+    //             debugger;
+    //         }
+    //
+    //
+    //         repeat = false;
+    //         intersectionPoints = [];
+    //         let line = new Line(lineStartingPoint, point);
+    //         let lines = this.getLines();
+    //         for (let i = 0, n = lines.length; i < n; i++) {
+    //             let l = lines[i];
+    //             if (l.containsPoint(point)) {
+    //                 return withTouching;
+    //             }
+    //             let newIntersectionPoints = line.getIntersectionPointsWith(l);
+    //             // if (newIntersectionPoints.length === 1 && (newIntersectionPoints[0].equals(l.p1) || newIntersectionPoints[0].equals(l.p2))) {
+    //             if (newIntersectionPoints.length === 2) {
+    //                 repeat = true;
+    //                 lineStartingPoint = new Point(Random.getIntRandom(max.x*200), Random.getIntRandom(max.y*200));
+    //                 if (lineStartingPoint.x >= min.x && lineStartingPoint.x <= max.x
+    //                     && lineStartingPoint.y >= min.y && lineStartingPoint.y <= max.y
+    //                 ){
+    //                     lineStartingPoint.addX(distance.x);
+    //                 }
+    //                 break;
+    //             }
+    //             intersectionPoints.push(...newIntersectionPoints.filter(p => Point.indexOf(intersectionPoints, p) === -1))
+    //         }
+    //     } while (repeat === true);
+    //     return intersectionPoints.length % 2 === 1;
+    // }
+
+    union(...others) {
+
+        if (others.length === 0) {
+            return [this];
+        }
+
+        let connectedFaces = [this];
+        let notConnectedFaces = [];
+        for (let i = 0; i < others.length; i++) {
+            let o = others[i];
+            let collisionStatus = this.checkCollision(o);
+            if ((collisionStatus & (Face.COLLISION_INTERSECTS | Face.COLLISION_TOUCHING)) !== 0 && (collisionStatus & Face.COLLISION_INSIDE) === 0) {
+                connectedFaces.push(o);
+            } else if ((collisionStatus & Face.COLLISION_INSIDE_OTHER) !== 0) {
+                others.splice(i, 1);
+                return o.union(...others);
+            } else if (collisionStatus === 0) {
+                notConnectedFaces.push(o);
+            }
+        }
+
+        if (connectedFaces.length === 1) {
+            if (notConnectedFaces.length >= 1) {
+                return [...notConnectedFaces[0].union(...notConnectedFaces.slice(1)), this]
+            } else {
+                return [this]
+            }
+        }
+
+        let lines = [];
+        connectedFaces.forEach(f => lines.push(...f.getLines()));
+        connectedFaces.forEach(f => {
+            lines = f.cutLines(lines);
+        })
+
+        let face = new Face(...(Face._glueLines(lines)[0])).removeUnnecessaryPoints();
+        return face.union(...notConnectedFaces);
+    }
+
+    setminus(...others) {
+        if (others.length === 0) {
+            return [this];
+        }
+        let other = others[0]
+        let allFaces = [this, other];
+
+        let lines = [];
+        allFaces.forEach(f => lines.push(...f.getLines()));
+        allFaces.forEach(f => {
+            lines = f.cutLines(lines);
+        });
+
+        let faces = Face._glueLines(lines, other, this).map(points => {
+            return new Face(...points).removeUnnecessaryPoints()
+        });
+        let res = [];
+
+        others = others.slice(1);
+        faces.forEach(f => {
+            res.push(...f.setminus(...others));
+        });
+        return res;
+    }
+
+    intersection(...others) {
+        let allFaces = [this, ...others];
+
+        let lines = [];
+        allFaces.forEach(f => lines.push(...f.getLines()));
+        allFaces.forEach(f => {
+            lines = f.cutLines(lines);
+        })
+
+        lines = lines.filter(l => allFaces.every(f => f.containsPoint(l.getCenter())));
+
+        return Face._glueLines(lines).map(points => new Face(...points));
+    }
+
     _getPointInside() {
-        let points = this._points;
-        if (points.length <= 2) {
+        let lines = this.getLines();
+        if (lines.length <= 2) {
             return null;
         }
-        for (let i = 0; i < points.length; i++) {
-            let otherIndex = (i + 2) % points.length;
-            let p = points[i].copy().add(points[otherIndex].copy().substract(points[i]).multiply(0.5));
-            if (this.containsPoint(p)) {
+        for (let i = 0; i < lines.length; i++) {
+            let otherIndex = (i + 1) % lines.length;
+            let connectedLine = new Line(lines[i].p1.copy().add(lines[i].getVector().multiply(0.5)), lines[otherIndex].p1.copy().add(lines[otherIndex].getVector().multiply(0.5)));
+            let p = connectedLine.p1.copy().add(connectedLine.getVector().multiply(0.5))
+            if (this.containsPoint(p, false)) {
                 return p;
             }
         }
@@ -186,40 +344,6 @@ export class Face extends GeometryBase {
         }
     }
 
-    removeInnerEdges() {
-
-        if (this._points.length <= 2 || this._getPointInside() === null) {
-            return this;
-        }
-
-        //Remove polygons inside
-        let points = [];
-        let faces = [];
-        let lines = this.cutLines(this.getLines());
-        lines.forEach(l => points.push(l.p1));
-
-        for (let i = 0; i < points.length; i++) {
-            let p = points[i];
-            let otherIndex = Point.indexOf(points, p, i + 1);
-            if (otherIndex !== -1) {
-                let innerPoints = points.splice(i + 1, otherIndex - i);
-                let newFace = new Face(...innerPoints);
-                let otherFace = new Face(...points);
-                if (newFace._getPointInside() !== null && otherFace._getPointInside() !== null && (otherFace.checkCollision(newFace) & Face.COLLISION_INSIDE) === 0) {
-                    // points.splice(i + 1, 0, ...innerPoints);
-                    faces.push(newFace);
-                }
-            }
-        }
-        this.setPoints(points);
-        let newFaces = Face.arrayUnion(this, ...faces);
-        if (newFaces.length >= 2) {
-            throw new Error("should not be possible!");
-        }
-        this.setPoints(newFaces[0].getPoints());
-        return this;
-    }
-
     removeUnnecessaryPoints() {
 
         //concat lines with same gradient
@@ -227,7 +351,7 @@ export class Face extends GeometryBase {
         let lines = this.getLines();
         lines.forEach((l, i) => {
             let nextLine = lines[(i + 1) % lines.length];
-            if (nextLine.getGradient()!== l.getGradient()) {
+            if (nextLine.getGradient() !== l.getGradient()) {
                 points.push(l.p2);
             }
         });
@@ -236,293 +360,17 @@ export class Face extends GeometryBase {
         return this;
     }
 
-    setminus(other) {
-
-        other = other.removeUnnecessaryPoints();
-        let self = this.removeUnnecessaryPoints()
-        if (other.getPoints().length <= 2) {
-            return [this];
-        } else if (self.getPoints().length <= 2) {
-            return [];
-        }
-
-        let [one, another] = Face._getFacesWithIntersectionPoints(self, other);
-
-        //No intersection found
-        if (one === this) {
-            if (one.containsPoint(another.getLastPoint())) { //If one contains another
-                throw new Error("Should not be possible!");
-            } else if (another.containsPoint(one.getLastPoint())) { //If another contains one
-                return [];
-            } else { //if none contains another
-                return [this]
-            }
-        }
-
-        let points = one.getPoints();
-        let pointsOther = another.getPoints();
-
-        let lines = [];
-        points.forEach((p, i, points) => {
-            let nextPoint = points[(i + 1) % points.length];
-            let lineMiddle = p.copy().add(nextPoint.copy().substract(p).multiply(0.5));
-            if (!another.containsPoint(lineMiddle)) {
-                lines.push(new Line(p, nextPoint));
-            }
-        });
-
-        //Touching and therefore has intersection points, but this is fully in other
-        if (lines.length === 0) {
-            return [];
-        }
-
-        pointsOther.forEach((p, i, points) => {
-            let otherPoint = points[(i + 1) % points.length];
-            if (one.containsPoint(p.copy().add(otherPoint.copy().substract(p).multiply(0.5)))) {
-                lines.push(new Line(p, otherPoint));
-            }
-        })
-
-        let newFaces = [];
-        while (lines.length > 0) {
-            //calculate starting points
-            let currentPoint = null;
-            let reference = null;
-            lines.some((l, i) => {
-                let lineMiddle = l.p1.copy().add(l.getVector().multiply(0.5));
-                if (!other.containsPoint(lineMiddle)) {
-                    lines.splice(i, 1);
-                    lines.push(new Line(l.p1, lineMiddle));
-                    lines.push(new Line(lineMiddle, l.p2));
-
-                    currentPoint = lineMiddle;
-
-                    if (l.p1.x === l.p2.x) {
-                        reference = lineMiddle.copy().substract(1, 0);
-                        if (one.containsPoint(reference)) {
-                            reference = lineMiddle.copy().add(1, 0);
-                        }
-                    } else {
-                        reference = lineMiddle.copy().substract(0, 1);
-                        if (one.containsPoint(reference)) {
-                            reference = lineMiddle.copy().add(0, 1);
-                        }
-                    }
-                    return true;
-                }
-            })
-            if (currentPoint === null) {
-                break;
-            }
-
-            let startingPoint = currentPoint;
-            let line = new Line(reference, currentPoint);
-            let newPoints = [];
-            do {
-                newPoints.push(currentPoint);
-                let possiblePoints = lines.filter(l => l.p1.equals(currentPoint) || l.p2.equals(currentPoint)).map(l => l.p1.equals(currentPoint) ? l.p2 : l.p1);
-
-                let inVector = line.p1.copy().substract(line.p2);
-                if (inVector.equals(new Point(0, 0))) {
-                    inVector = new Point(-1, -1);
-                }
-
-                let useSmallestAngle = ((Point.indexOf(points, currentPoint) === -1 || Point.indexOf(pointsOther, currentPoint) === -1))
-                let nextPoint = Face._getNextPoint(inVector, currentPoint, possiblePoints, useSmallestAngle);
-                if (nextPoint === null) {
-                    newPoints = [];
-                    lines = [];
-                    break;
-                }
-
-                line = new Line(currentPoint, nextPoint);
-                lines = lines.filter((l, i) => !l.equals(line, false));
-                currentPoint = nextPoint;
-
-            } while (currentPoint !== startingPoint);
-            if (newPoints.length > 0) {
-                let newFace = new Face(...newPoints).removeUnnecessaryPoints();
-                if (newFace.getPoints().length > 0) {
-                    newFaces.push(newFace);
-                }
-            }
-        }
-
-        return newFaces;
-    }
-
-    union(...others) {
-        if (others.length === 0) {
-            return [this];
-        }
-
-        let self = this.removeUnnecessaryPoints();
-        let other = others[0].removeUnnecessaryPoints();
-        if (other.getPoints().length <= 2) {
-            return this.union(...others.slice(1))
-        } else if (self.getPoints().length <= 2) {
-            // return other.union(...others.slice(1))
-            return [];
-        }
-
-        let [one, another] = Face._getFacesWithIntersectionPoints(self, other);
-
-        //No intersection found
-        if (one === this) {
-            if (one.containsPoint(another.getLastPoint())) { //If one contains another
-                return one.union(...others.slice(1));
-            } else if (another.containsPoint(one.getLastPoint())) { //If another contains one
-                return another.union(...others.slice(1));
-            } else { //if none contains another
-                return [another, ...this.union(...others.slice(1))]
-            }
-        }
-
-        let points = one.getPoints();
-        let pointsOther = another.getPoints();
-
-        //calculate startingPoint
-        let reference = Point.min(...points, ...pointsOther);
-
-        let lines = [];
-        let startingPoint = null;
-        let smallestLength = null;
-        let _pointCallback = (p, i, points) => {
-            let length = new Line(p, reference).length();
-            if (smallestLength === null || length < smallestLength) {
-                smallestLength = length;
-                startingPoint = p;
-            }
-            lines.push(new Line(p, points[(i + 1) % points.length]));
-        }
-        points.forEach(_pointCallback);
-        pointsOther.forEach(_pointCallback);
-
-        //loop through points until outline done
-        let currentPoint = startingPoint;
-        let line = new Line(reference, currentPoint);
-        let newPoints = [];
-        do {
-            newPoints.push(currentPoint);
-            let possiblePoints = lines.filter(l => l.p1.equals(currentPoint) || l.p2.equals(currentPoint)).map(l => l.p1.equals(currentPoint) ? l.p2 : l.p1);
-
-            let inVector = line.p1.copy().substract(line.p2);
-            if (inVector.equals(new Point(0, 0))) {
-                inVector = new Point(-1, -1);
-            }
-
-            let nextPoint = Face._getNextPoint(inVector, currentPoint, possiblePoints);
-            if (nextPoint === null) {
-                break;
-            }
-
-            line = new Line(currentPoint, nextPoint);
-            lines = lines.filter((l, i) => !l.equals(line, false));
-            currentPoint = nextPoint;
-
-        } while (currentPoint !== startingPoint);
-
-        let newFace = new Face(...newPoints).removeUnnecessaryPoints();
-        return newFace.union(...others.slice(1));
-    }
-
-    intersection(...others) {
-        if (others.length === 0) {
-            return [this];
-        }
-
-        let self = this.removeUnnecessaryPoints();
-        let other = others[0].removeUnnecessaryPoints();
-        if (other.getPoints().length <= 2) {
-            return this.intersection(...others.slice(1))
-        } else if (self.getPoints().length <= 2) {
-            return [];
-        }
-
-        let [one, another] = Face._getFacesWithIntersectionPoints(self, other);
-
-        //No intersection found
-        if (one === this) {
-            if (one.containsPoint(another.getLastPoint())) { //If one contains another
-                return another.intersection(...others.slice(1));
-            } else if (another.containsPoint(one.getLastPoint())) { //If another contains one
-                return one.intersection(...others.slice(1));
-            } else { //if none contains another
-                return [];
-            }
-        }
-
-        let points = one.getPoints();
-        let pointsOther = another.getPoints();
-
-        let lines = [];
-        let _pointCallback = (p, i, points, otherFace) => {
-            let otherPoint = points[(i + 1) % points.length];
-            if (otherFace.containsPoint(p.copy().add(otherPoint.copy().substract(p).multiply(0.5)))) {
-                lines.push(new Line(p, otherPoint));
-            }
-        }
-        points.forEach((p, i, points) => {
-            _pointCallback(p, i, points, another);
-        });
-        pointsOther.forEach((p, i, points) => {
-            _pointCallback(p, i, points, one);
-        });
-
-        let faces = [];
-        while (lines.length > 0) {
-            let startingPoint = lines[0].p1;
-            //loop through points until outline done
-            let currentPoint = startingPoint;
-            let newPoints = [];
-            do {
-                newPoints.push(currentPoint);
-                let nextPoint = null;
-                lines.some(l => {
-                    if (l.p1.equals(currentPoint)) {
-                        nextPoint = l.p2;
-                        return true;
-                    } else if (l.p2.equals(currentPoint)) {
-                        nextPoint = l.p1;
-                        return true;
-                    }
-                });
-
-                if (nextPoint === null) {
-                    newPoints = [];
-                    lines = [];
-                    break;
-                }
-
-                let line = new Line(currentPoint, nextPoint);
-                lines = lines.filter((l, i) => !l.equals(line, false));
-                currentPoint = nextPoint;
-
-            } while (currentPoint !== startingPoint);
-            if (newPoints.length > 0) {
-                faces.push(new Face(...newPoints));
-            }
-        }
-
-        let resultFaces = [];
-        faces.forEach(f => {
-            resultFaces.push(...f.intersection(...others.slice(1)));
-        })
-
-        return resultFaces;
-    }
-
     cutLines(lines) {
         let myLines = this.getLines();
         let intersections = {};
         lines.forEach((l1, i) => {
-            myLines.forEach((l2) => {
+            myLines.forEach((l2, i2) => {
                 let points = l1.getIntersectionPointsWith(l2);
                 points.forEach(p => {
                     intersections[i] = Helper.nonNull(intersections[i], []);
                     let intersectionObject = {
-                        i: i,
                         p: p,
+                        i2: i2
                     };
 
                     intersections[i].push(intersectionObject);
@@ -560,16 +408,162 @@ export class Face extends GeometryBase {
         return this.cutLines(lines).filter(l => this.containsPoint(l.getCenter()));
     }
 
-    static arrayUnion(...faces) {
-        let lengthBefore = faces.length;
-        if (lengthBefore === 0) {
+    static _glueLines(lines, notInFace?, inFace?) {
+        if (lines.length === 0) {
             return [];
         }
+
+        notInFace = Helper.nonNull(notInFace, new Face());
+        inFace = Helper.nonNull(inFace, null);
+
+        let startingPoint = null;
+        let reference = null;
+
+        if (inFace) {
+            let lineIndex = null;
+            lines.some((l, i) => {
+                if (startingPoint === null) {
+                    let center = l.getCenter();
+                    if (!notInFace.containsPoint(center) && inFace.containsPoint(center)) {
+                        startingPoint = center;
+                        lineIndex = i;
+                        return true;
+                    }
+                }
+            });
+
+            if (startingPoint === null) {
+                return [];
+            }
+
+            let line = lines[lineIndex];
+            lines.splice(lineIndex, 1);
+            lines.push(new Line(line.p1, startingPoint));
+            lines.push(new Line(startingPoint, line.p2));
+
+            let max = Point.max(...inFace.getPoints());
+            let min = Point.min(...inFace.getPoints());
+
+            let linesToCut = [
+                new Line(new Point(startingPoint.x, min.y), new Point(startingPoint.x, max.y)),
+                new Line(new Point(min.x, startingPoint.y), new Point(max.x, startingPoint.y))
+            ]
+            let linesCut = inFace.cutLines(linesToCut);
+
+            let smallestDistance = null;
+            let smallestDistanceLine = null;
+            linesCut.some(l => {
+                if (l.p1.equals(startingPoint) || l.p2.equals(startingPoint)) {
+                    let center = l.getCenter();
+                    if (inFace.containsPoint(center, false)) {
+                        reference = startingPoint.copy().add(startingPoint.copy().substract(center));
+                        return true;
+                    } else {
+                        reference = center;
+                        return true;
+                    }
+                }
+                //Handle rundungsfehler(?)
+                let length = Math.min(l.p1.copy().substract(startingPoint).length(), l.p2.copy().substract(startingPoint).length());
+                if (smallestDistance === null || length < smallestDistance) {
+                    smallestDistance = length;
+                    smallestDistanceLine = l;
+                }
+            });
+
+            //Handle rundungsfehler(?)
+            if (reference === null) {
+                let center = smallestDistanceLine.getCenter();
+                if (inFace.containsPoint(center, false)) {
+                    reference = startingPoint.copy().add(startingPoint.copy().substract(center));
+                } else {
+                    reference = center;
+                }
+            }
+
+            if (reference === null) {
+                debugger;
+            }
+        } else {
+            let points = [];
+            lines.forEach((l) => points.push(l.p1, l.p2));
+            reference = Point.min(...points).substract(1, 1);
+
+            points.forEach(p => {
+                if (startingPoint === null || p.x < startingPoint.x || (p.x === startingPoint.x && p.y < startingPoint.y)) {
+                    startingPoint = p;
+                }
+            });
+        }
+
+        let lineLengthBefore = lines.length;
+
+        let currentPoint = startingPoint;
+        let newPoints = [];
+        let line = new Line(reference, currentPoint);
+        const delta = 2 / GeometryBase.precision;
         do {
-            lengthBefore = faces.length;
-            faces = faces[0].union(...faces.slice(1));
-        } while (lengthBefore > faces.length);
-        return faces;
+            newPoints.push(currentPoint);
+            let possiblePoints = lines.filter(l => l.p1.equals(currentPoint, delta) || l.p2.equals(currentPoint, delta)).map(l => l.p1.equals(currentPoint, delta) ? l.p2 : l.p1);
+
+            let inVector = line.p1.copy().substract(line.p2);
+            if (inVector.equals(new Point(0, 0))) {
+                inVector = new Point(-1, -1);
+            }
+
+            let savedAngle = null;
+            let nextPoint = null;
+            let useSmallestAngle = !notInFace.containsPoint(currentPoint);
+            possiblePoints.forEach((p) => {
+                let outVector = p.copy().substract(currentPoint);
+
+                //check if valid
+                if (outVector.equals(new Point(0, 0))) {
+                    return;
+                }
+
+                let angle = 2 * Math.PI - Point.angleOf(inVector, outVector)
+                if (isNaN(angle)) {
+                    debugger;
+                    Point.angleOf(inVector, outVector);
+                }
+                if (inVector.crossProduct(outVector) < 0) {
+                    angle = 2 * Math.PI - angle;
+                }
+                if (savedAngle === null || (angle < savedAngle && useSmallestAngle) || (angle > savedAngle && !useSmallestAngle)) {
+                    savedAngle = angle;
+                    nextPoint = p;
+                }
+            });
+
+            if (nextPoint === null) {
+                newPoints = [];
+                break;
+            }
+
+            line = new Line(currentPoint, nextPoint);
+            lines = lines.filter(l => !l.equals(line, false, delta));
+            currentPoint = nextPoint;
+        } while (!currentPoint.equals(startingPoint, delta))
+        let res = [];
+
+        if (newPoints.length > 0) {
+            res.push(newPoints);
+        }
+        if (lines.length > 0 && lines.length < lineLengthBefore) {
+            res.push(...Face._glueLines(lines, notInFace, inFace));
+        }
+        return res;
+    }
+
+    static _removeInnerEdges(lines) {
+        let newPoints = Face._glueLines(lines);
+        //ignore others as only first is hull
+        if (newPoints.length >= 1) {
+            return newPoints[0];
+        } else {
+            return [];
+        }
     }
 
     static circle(center, radius, numPoints) {
@@ -585,35 +579,6 @@ export class Face extends GeometryBase {
 
     static rect(p1, p2) {
         return new Face(p1.copy(), p1.copy().setY(p2.y), p2.copy(), p1.copy().setX(p2.x));
-    }
-
-    static _getNextPoint(inVector, referencePoint, points, useSmallestAngle?) {
-        useSmallestAngle = Helper.nonNull(useSmallestAngle, true);
-
-        let savedAngle = null;
-        let nextPoint = null;
-        points.forEach((p) => {
-            let outVector = p.copy().substract(referencePoint);
-
-            //check if valid
-            if (outVector.equals(new Point(0, 0))) {
-                return;
-            }
-
-            let angle = 2 * Math.PI - Point.angleOf(inVector, outVector)
-            if (isNaN(angle)) {
-                debugger;
-                Point.angleOf(inVector, outVector);
-            }
-            if (inVector.crossProduct(outVector) < 0) {
-                angle = 2 * Math.PI - angle;
-            }
-            if (savedAngle === null || (angle < savedAngle && useSmallestAngle) || (angle > savedAngle && !useSmallestAngle)) {
-                savedAngle = angle;
-                nextPoint = p;
-            }
-        });
-        return nextPoint;
     }
 
     static _getIntersections(lines1, lines2) {

@@ -1,6 +1,7 @@
 import {Point} from "../../src/Geometry/Point";
 import {Face} from "../../src/Geometry/Face";
 import {Line} from "../../src/Geometry/Line";
+import {Polygon} from "../../src/Geometry/Polygon";
 
 describe('face', () => {
     it('containsPoint 1', () => {
@@ -180,7 +181,7 @@ describe('face', () => {
 
     it("union 11", () => {
         let face1 = new Face(...[new Point(210, 595), new Point(525, 35), new Point(805, 103.65384615384616), new Point(945, 350), new Point(770, 595)]);
-        let face2 = new Face(...[new Point(140, 35), new Point(140, 595), new Point(945, 595), new Point(945, 245), new Point(945, 35)]);
+        let face2 = new Face(...[new Point(140, 35), new Point(140, 595), new Point(945, 595), new Point(945, 35)]);
 
         let union = face2.union(face1);
 
@@ -218,8 +219,8 @@ describe('face', () => {
         expect(intersection.length).toBe(2);
         expect(intersection[0]).toBeInstanceOf(Face);
         expect(intersection[1]).toBeInstanceOf(Face);
-        expect(intersection[0].getPoints()).toEqual([new Point(10, 15), new Point(10, 20), new Point(15, 20), new Point(15, 15),]);
-        expect(intersection[1].getPoints()).toEqual([new Point(10, 0), new Point(10, 5), new Point(15, 5), new Point(15, 0)]);
+        expect(intersection[1].getPoints()).toEqual([new Point(10, 15), new Point(10, 20), new Point(15, 20), new Point(15, 15),]);
+        expect(intersection[0].getPoints()).toEqual([new Point(10, 0), new Point(10, 5), new Point(15, 5), new Point(15, 0)]);
     })
 
     it('intersection touching corner', () => {
@@ -492,7 +493,7 @@ describe('face', () => {
         // expect(setminus[1].getPoints()).toEqual([new Point(30,10), new Point(30,40), new Point(40,40), new Point(40,10)])
     })
 
-    it('union with self-crossing polygon 2', () => {
+    it('union with self-crossing polygon 3', () => {
         let face1 = new Face(new Point(45, 0), new Point(45, 70), new Point(90, 70), new Point(90, 0));
         let face2 = new Face(new Point(0, 0), new Point(70, 0), new Point(0, 70), new Point(70, 70));
 
@@ -504,22 +505,75 @@ describe('face', () => {
         // expect(setminus[1].getPoints()).toEqual([new Point(30,10), new Point(30,40), new Point(40,40), new Point(40,10)])
     })
 
-    it('setminus', () => {
-        let face1 = new Face(new Point(455, 105), new Point(466.6666666667, 110.8333333334), new Point(478.3333333333, 116.6666666667));
-        let face2 = new Face(new Point(350, 245), new Point(595, 70), new Point(455, 105), new Point(478, 116));
+    it("setminus 3", () => {
+        let face1 = new Face(new Point(0, 0), new Point(0, 140), new Point(140, 140), new Point(140, 0));
+        let face2 = new Face(new Point(0, 0), new Point(35, 140), new Point(70, 70), new Point(105, 140), new Point(140, 0));
 
-        let setminus = face2.setminus(face1);
+        let setminus = face1.setminus(face2);
+        expect(setminus.length).toBe(3);
+    })
+
+    it("setminus", () => {
+        let face1 = new Face(new Point(0, 17.5), new Point(0, 87.5), new Point(0.596, 92.029), new Point(2.345, 96.25), new Point(5.126, 99.874), new Point(8.75, 102.655), new Point(12.971, 104.404), new Point(17.5, 105), new Point(87.5, 105), new Point(92.029, 104.404), new Point(96.25, 102.655), new Point(99.874, 99.874), new Point(102.655, 96.25), new Point(104.404, 92.029), new Point(105, 87.5), new Point(105, 17.5), new Point(104.404, 12.971), new Point(102.655, 8.75), new Point(99.874, 5.126), new Point(96.25, 2.345), new Point(92.029, 0.596), new Point(87.5, 0), new Point(17.5, 0), new Point(12.971, 0.596), new Point(8.75, 2.345), new Point(5.126, 5.126), new Point(2.345, 8.75), new Point(0.596, 12.971));
+        let face2 = new Face(new Point(0, 17.5), new Point(0, 87.5), new Point(0.596, 92.029), new Point(2.345, 96.25), new Point(5.126, 99.874), new Point(8.75, 102.655), new Point(12.971, 104.404), new Point(17.5, 105), new Point(35, 35), new Point(70, 35), new Point(82.971, 104.404), new Point(87.5, 105), new Point(92.029, 104.404), new Point(96.25, 102.655), new Point(99.874, 99.874), new Point(102.655, 96.25), new Point(104.404, 92.029), new Point(105, 87.5), new Point(105, 17.5), new Point(104.404, 12.971), new Point(102.655, 8.75), new Point(99.874, 5.126), new Point(96.25, 2.345), new Point(92.029, 0.596), new Point(87.5, 0), new Point(17.5, 0), new Point(12.971, 0.596), new Point(8.75, 2.345), new Point(5.126, 5.126), new Point(2.345, 8.75), new Point(0.596, 12.971));
+
+        let setminus = face1.setminus(face2);
 
         expect(setminus.length).toBe(1);
-        expect(setminus[0]).toBeInstanceOf(Face);
+        expect(setminus[0].getPoints().length).toBe(5);
     })
 
-    it('removeUnnecessaryPoints', () => {
-        let face = new Face(new Point(0, 0), new Point(0, 70), new Point(70, 70), new Point(70, 35), new Point(35, 35), new Point(35, 105), new Point(105, 105), new Point(105, 0));
+    it("union", () => {
+        let face1 = new Face(new Point(0, 70), new Point(17.5, 70), new Point(35, 87.5), new Point(26.25, 102.655), new Point(22.029, 104.404), new Point(0, 105));
+        let face2 = new Face(new Point(9.678, 71.855), new Point(25.322, 103.145), new Point(95.322, 68.145), new Point(79.678, 36.855));
 
-        face = face.removeInnerEdges().removeUnnecessaryPoints();
+        let union = face1.union(face2);
 
-        expect(face).toBeInstanceOf(Face);
-        expect(face.getPoints()).toEqual([new Point(0, 0), new Point(0, 70), new Point(35, 70), new Point(35, 105), new Point(105, 105), new Point(105, 0)]);
+        let res = [new Point(0, 70), new Point(0, 105), new Point(22.029, 104.404), new Point(25.27831, 103.05762), new Point(25.322, 103.145), new Point(95.322, 68.145), new Point(79.678, 36.855), new Point(13.388, 70)];
+        expect(union.length).toBe(1);
+        expect(union[0].getPoints()).toEqual(res);
+    })
+
+    it("union", () => {
+        let face1 = new Face(new Point(239.887, 145.143), new Point(274.872, 180.128), new Point(250.128, 204.872), new Point(215.143, 169.887));
+        let face2 = new Face(new Point(245, 192.5), new Point(262.5, 175), new Point(274.874, 180.126), new Point(280, 192.5), new Point(262.5, 210), new Point(257.971, 209.404), new Point(253.75, 207.655), new Point(247.345, 201.25));
+
+        let union = face1.union(face2);
+
+        expect(union.length).toBe(1);
+        expect(union[0].getPoints().length).toBeGreaterThan(4);
+    })
+
+    it("union", () => {
+        let offset = new Point(-650, -330);
+        let factor = 1;
+        let face1 = new Face(new Point(702.345, 358.75).add(offset).multiply(factor), new Point(705.126, 355.126).add(offset).multiply(factor), new Point(712.971, 350.596).add(offset).multiply(factor), new Point(735, 350).add(offset).multiply(factor), new Point(700, 385).add(offset).multiply(factor));
+        let face2 = new Face(new Point(670.128, 390.128).add(offset).multiply(factor), new Point(694.872, 414.872).add(offset).multiply(factor), new Point(729.872, 379.872).add(offset).multiply(factor), new Point(705.128, 355.128).add(offset).multiply(factor));
+
+        let union = face1.union(face2);
+
+        expect(union.length).toBe(1);
+        expect(union[0].getPoints().length).toBeLessThan(10);
+    })
+
+    it("union", () => {
+        let offset = new Point(-400, -450);
+        let factor = 1;
+        let face1 = new Face(new Point(425.1273, 530.1243).add(offset).multiply(factor), new Point(460.1258, 495.1258).add(offset).multiply(factor), new Point(484.8742, 519.8742).add(offset).multiply(factor), new Point(449.8757, 554.8727).add(offset).multiply(factor), new Point(425.1256, 554.8744).add(offset).multiply(factor));
+        let face2 = new Face(new Point(460.1256, 495.1256).add(offset).multiply(factor), new Point(472.5, 490).add(offset).multiply(factor), new Point(490, 507.5).add(offset).multiply(factor), new Point(484.8744, 519.8744).add(offset).multiply(factor), new Point(481.25, 522.6554).add(offset).multiply(factor), new Point(455.5963, 512.0293).add(offset).multiply(factor));
+
+        let union = face1.union(face2);
+        expect(union.length).toBe(1);
+        expect(union[0].getPoints().length).toBe(8);
+    })
+
+    it("union", () => {
+        let face1 = new Face(new Point(452.6554, 551.25), new Point(449.8744, 554.8744), new Point(420.5963, 547.0293));
+        let face2 = new Face(new Point(425.1258, 530.1258), new Point(449.8742, 554.8742), new Point(484.8742, 519.8742), new Point(460.1258, 495.1258));
+
+        let union = face1.union(face2);
+        expect(union.length).toBe(1);
+        expect(union[0].getPoints().length).toBe(8);
     })
 });
+

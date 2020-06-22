@@ -9,7 +9,6 @@ export declare class Polygon extends GeometryBase {
     setHoles(holes: any): void;
     addHole(hole: any): boolean;
     removeUnnecessaryPoints(): this;
-    removeInnerEdges(): this;
     union(...others: any[]): any;
     setminus(...others: any[]): any;
     intersection(...others: any[]): any[];

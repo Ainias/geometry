@@ -8,7 +8,7 @@ export declare class Line extends GeometryBase {
     length(): number;
     getGradient(): number;
     set(p1: any, p2: any): void;
-    equals(other: any, direction?: any): boolean;
+    equals(other: any, direction?: any, delta?: any): boolean;
     containsPoint(p: any): boolean;
     getIntersectionPointsWith(other: any): any[];
     getVector(): Point;

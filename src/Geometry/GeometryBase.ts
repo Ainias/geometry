@@ -1,11 +1,15 @@
 import {Helper} from "js-helper/dist/shared/Helper";
 
 export class GeometryBase {
-    _precision: number;
+    _precision: any;
+
+    // static precision: number = 1000;
+    static precision: number = 10000;
 
 
     constructor(precision?: number) {
-        this._precision = Helper.nonNull(precision, 1000000000);
+        this._precision = precision;
+        // this._precision = Helper.nonNull(precision, 100000000);
         // this._precision = 10000000000;
     }
 
@@ -13,7 +17,13 @@ export class GeometryBase {
         this._precision = precision;
     }
 
-    _roundToPrecision(val){
-        return Math.round(val*this._precision)/this._precision;
+    _roundToPrecision(val, precision?){
+        precision = Helper.nonNull(precision, this._precision, GeometryBase.precision);
+        // return Math.floor(val*precision)/precision;
+        return Math.round(val*precision)/precision;
+    }
+
+    _round(val){
+        return Math.round(val);
     }
 }

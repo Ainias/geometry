@@ -129,6 +129,13 @@ describe('line', () => {
         expect(line.containsPoint(p)).toBe(false);
     })
 
+    it('contains 7', () => {
+        let line = new Line(new Point(82.971,104.404), new Point(87.5,105));
+        let p = new Point(87.5,105);
+
+        expect(line.containsPoint(p)).toBe(true);
+    })
+
     it('combine array', () => {
         let lines1 = Face.rect(new Point(0,0), new Point(10,10)).getLines();
         let lines2 = Face.rect(new Point(5,10), new Point(10,20)).getLines();
@@ -136,5 +143,13 @@ describe('line', () => {
         let lines = Line.combineArrays(lines2, lines1);
 
         expect(lines.length).toBe(6);
+    })
+
+    it('getIntersectionPoints', () => {
+        let line1 = new Line(new Point(25.278, 103.058), new Point(95.322, 68.145));
+        let line2 = new Line(new Point(26.25, 102.655), new Point(35, 87.5))
+
+        let intersectionPoints = line1.getIntersectionPointsWith(line2);
+        expect(intersectionPoints.length).toBe(1);
     })
 });

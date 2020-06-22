@@ -1,3 +1,4 @@
+import { Point } from "./Point";
 import { GeometryBase } from "./GeometryBase";
 export declare class Face extends GeometryBase {
     static COLLISION_NONE: number;
@@ -14,20 +15,19 @@ export declare class Face extends GeometryBase {
     getLastPoint(): any;
     split(): any[];
     containsPoint(point: any, withTouching?: any): any;
-    _getPointInside(): any;
-    checkCollision(otherFace: any): number;
-    removeInnerEdges(): this;
-    removeUnnecessaryPoints(): this;
-    setminus(other: any): any[];
     union(...others: any[]): any;
-    intersection(...others: any[]): any;
+    setminus(...others: any[]): any[];
+    intersection(...others: any[]): Face[];
+    _getPointInside(): Point;
+    checkCollision(otherFace: any): number;
+    removeUnnecessaryPoints(): this;
     cutLines(lines: any): any[];
     cutLinesOutside(lines: any): any[];
     cutLinesWithin(lines: any): any[];
-    static arrayUnion(...faces: any[]): any[];
+    static _glueLines(lines: any, notInFace?: any, inFace?: any): any[];
+    static _removeInnerEdges(lines: any): any;
     static circle(center: any, radius: any, numPoints: any): Face;
     static rect(p1: any, p2: any): Face;
-    static _getNextPoint(inVector: any, referencePoint: any, points: any, useSmallestAngle?: any): any;
     static _getIntersections(lines1: any, lines2: any): {}[];
     static _getFacesWithIntersectionPoints(one: any, another: any): any[];
 }

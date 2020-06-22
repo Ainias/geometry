@@ -2,7 +2,7 @@ import {Helper} from "js-helper/dist/shared/Helper";
 import {Rect} from "./Rect";
 import {GeometryBase} from "./GeometryBase";
 
-export class Point extends GeometryBase{
+export class Point extends GeometryBase {
 
     x: number;
     y: number;
@@ -29,8 +29,8 @@ export class Point extends GeometryBase{
             factorY = factorOrPoint;
         }
 
-        this.x = this._roundToPrecision(this.x*factorX);
-        this.y = this._roundToPrecision(this.y*factorY);
+        this.x = this._roundToPrecision(this.x * factorX);
+        this.y = this._roundToPrecision(this.y * factorY);
 
         return this;
     }
@@ -62,8 +62,8 @@ export class Point extends GeometryBase{
             dividerY = dividerOrPoint;
         }
 
-        this.x = this._roundToPrecision(this.x/dividerX);
-        this.y = this._roundToPrecision(this.y/dividerY);
+        this.x = this._roundToPrecision(this.x / dividerX);
+        this.y = this._roundToPrecision(this.y / dividerY);
 
         return this;
     }
@@ -105,8 +105,8 @@ export class Point extends GeometryBase{
             xOrPoint = xOrPoint.x;
         }
 
-        this.x += this._roundToPrecision(xOrPoint);
-        this.y += this._roundToPrecision(y);
+        this.x = this._roundToPrecision(this.x+xOrPoint);
+        this.y = this._roundToPrecision(this.y+y);
 
         return this;
     }
@@ -115,7 +115,7 @@ export class Point extends GeometryBase{
         if (x instanceof Point) {
             x = x.x;
         }
-        this.x += this._roundToPrecision(x);
+        this.x = this._roundToPrecision(this.x+x);
         return this;
     }
 
@@ -123,7 +123,7 @@ export class Point extends GeometryBase{
         if (y instanceof Point) {
             y = y.y;
         }
-        this.y += this._roundToPrecision(y);
+        this.y = this._roundToPrecision(this.y+y);
         return this;
     }
 
@@ -134,8 +134,8 @@ export class Point extends GeometryBase{
             xOrPoint = xOrPoint.x;
         }
 
-        this.x -= this._roundToPrecision(xOrPoint);
-        this.y -= this._roundToPrecision(y);
+        this.x = this._roundToPrecision(this.x-xOrPoint);
+        this.y = this._roundToPrecision(this.y-y);
 
         return this;
     }
@@ -144,7 +144,7 @@ export class Point extends GeometryBase{
         if (x instanceof Point) {
             x = x.x;
         }
-        this.x -= this._roundToPrecision(x);
+        this.x = this._roundToPrecision(this.x-x);
         return this;
     }
 
@@ -152,7 +152,7 @@ export class Point extends GeometryBase{
         if (y instanceof Point) {
             y = y.y;
         }
-        this.y -= this._roundToPrecision(y);
+        this.y = this._roundToPrecision(this.y-y);
         return this;
     }
 
@@ -245,12 +245,17 @@ export class Point extends GeometryBase{
         return !this.smallerYThan(yOrOther);
     }
 
-    equals(other) {
+    equals(other, delta?) {
         if (!(other instanceof Point)) {
             return false;
         }
 
-        return this.x === other.x && this.y === other.y;
+        delta = Helper.nonNull(delta, 0);
+
+        let diff = this.copy().substract(other).abs();
+        return diff.x <= delta && diff.y <= delta;
+
+        // return this.x === other.x && this.y === other.y;
     }
 
     bound(rect) {
@@ -334,6 +339,6 @@ export class Point extends GeometryBase{
 
     static angleOf(p1, p2) {
         let scalarProduct = p1.copy().normalize().scalarProduct(p2.copy().normalize());
-        return Math.acos( scalarProduct);
+        return Math.acos(Math.max(Math.min(scalarProduct, 1), -1));
     }
 }
