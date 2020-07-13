@@ -7,6 +7,8 @@ export declare class Line extends GeometryBase {
     constructor(p1: any, p2: any, precision?: any);
     length(): number;
     getGradient(): number;
+    multiply(pointOrFactor: any): this;
+    copy(): Line;
     set(p1: any, p2: any): void;
     equals(other: any, direction?: any, delta?: any): boolean;
     containsPoint(p: any): boolean;
@@ -14,6 +16,7 @@ export declare class Line extends GeometryBase {
     getVector(): Point;
     combine(other: any): any[];
     getCenter(): Point;
+    rotate(angle: any, point?: any): this;
     getOrthogonalVector(): Point;
     static combineArrays(lines: any, linesOther: any): any;
 }

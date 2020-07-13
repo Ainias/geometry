@@ -5,6 +5,7 @@ export declare class Polygon extends GeometryBase {
     constructor(face?: any, holes?: any, precision?: any);
     getFace(): any;
     getHoles(): any;
+    containsPoint(p: any, withTouching: any): any;
     checkCollision(other: any): any;
     setHoles(holes: any): void;
     addHole(hole: any): boolean;

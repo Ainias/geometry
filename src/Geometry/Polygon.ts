@@ -32,6 +32,10 @@ export class Polygon extends GeometryBase {
         return this._holes;
     }
 
+    containsPoint(p, withTouching){
+        return (this._face.containsPoint(p, withTouching) && this._holes.every(h => !h.containsPoint(p, withTouching)));
+    }
+
     checkCollision(other) {
         return this.getFace().checkCollision(other.getFace());
     }

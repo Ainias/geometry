@@ -529,7 +529,7 @@ describe('face', () => {
 
         let union = face1.union(face2);
 
-        let res = [new Point(0, 70), new Point(0, 105), new Point(22.029, 104.404), new Point(25.278316779606, 103.057623537661), new Point(25.322, 103.145), new Point(95.322, 68.145), new Point(79.678, 36.855), new Point(13.388, 70)];
+        let res = [new Point(0, 70), new Point(0, 105), new Point(22.029, 104.404), new Point(25.27831669556, 103.057627806448), new Point(25.322, 103.145), new Point(95.322, 68.145), new Point(79.678, 36.855), new Point(13.388, 70)];
         expect(union.length).toBe(1);
         expect(union[0].getPoints()).toEqual(res);
     })
@@ -574,6 +574,20 @@ describe('face', () => {
         let union = face1.union(face2);
         expect(union.length).toBe(1);
         expect(union[0].getPoints().length).toBe(7);
+    })
+
+    it("containsPoint 2", () => {
+        let face = Face.circle(new Point(52.5,52.5), 17.5, 24);
+        let lines = face.getLines();
+
+        // lines = face.cutLines(lines);
+
+        expect(lines.length).toBe(5);
+        expect(face.containsPoint(lines[0].getCenter())).toBeTrue();
+        expect(face.containsPoint(lines[1].getCenter())).toBeTrue();
+        expect(face.containsPoint(lines[2].getCenter())).toBeTrue();
+        expect(face.containsPoint(lines[3].getCenter())).toBeTrue();
+        expect(face.containsPoint(lines[4].getCenter())).toBeTrue();
     })
 });
 

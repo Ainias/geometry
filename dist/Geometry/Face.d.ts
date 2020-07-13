@@ -13,6 +13,8 @@ export declare class Face extends GeometryBase {
     getLines(): any[];
     getPoints(): any;
     getLastPoint(): any;
+    getAreaWithGaussscheDreiecksformel(): number;
+    getCentroidForSimpleFace(): Point;
     split(): any[];
     containsPoint(point: any, withTouching?: any): any;
     union(...others: any[]): any;
@@ -22,8 +24,8 @@ export declare class Face extends GeometryBase {
     checkCollision(otherFace: any): number;
     removeUnnecessaryPoints(): this;
     cutLines(lines: any): any[];
-    cutLinesOutside(lines: any): any[];
-    cutLinesWithin(lines: any): any[];
+    cutLinesOutside(lines: any, touching?: any): any[];
+    cutLinesWithin(lines: any, touching?: any): any[];
     static _glueLines(lines: any, notInFace?: any, inFace?: any): any[];
     static _removeInnerEdges(lines: any): any;
     static circle(center: any, radius: any, maxDistance: any): Face;

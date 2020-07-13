@@ -19,13 +19,14 @@ export declare class Point extends GeometryBase {
     add(xOrPoint: any, y?: any): this;
     addX(x: any): this;
     addY(y: any): this;
-    substract(xOrPoint: any, y?: any): this;
-    substractX(x: any): this;
-    substractY(y: any): this;
+    subtract(xOrPoint: any, y?: any): this;
+    subtractX(x: any): this;
+    subtractY(y: any): this;
     set(xOrPoint: any, y: any): this;
     setX(x: any): this;
     setY(y: any): this;
     abs(): this;
+    isNaN(): boolean;
     smallerValuesThan(other: any): boolean;
     smallerEqualValuesThan(other: any): boolean;
     greaterValuesThan(other: any): boolean;
@@ -43,6 +44,8 @@ export declare class Point extends GeometryBase {
     swapDimensions(): this;
     length(): number;
     toArray(): number[];
+    rotate(angle: any, rotationPoint?: any): this;
+    transform(m11: any, m12: any, m13: any, m21: any, m22: any, m23: any): this;
     static singleFromArray(pointArray: any): Point;
     static fromArray(array: any): any;
     static toArray(points: any): any;

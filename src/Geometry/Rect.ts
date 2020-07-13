@@ -2,7 +2,7 @@ import {Point} from "./Point";
 import {Helper} from "js-helper/dist/shared/Helper";
 import {GeometryBase} from "./GeometryBase";
 
-export class Rect extends GeometryBase{
+export class Rect extends GeometryBase {
 
     p1: Point;
     p2: Point;
@@ -12,6 +12,10 @@ export class Rect extends GeometryBase{
         this.p1 = new Point();
         this.p2 = new Point();
         this.set(p1, p2);
+    }
+
+    containsPoint(point) {
+        return !(point.x < this.p1.x || point.y < this.p1.y || point.x > this.p2.x || point.y > this.p2.y)
     }
 
     set(p1?, p2?) {
@@ -26,6 +30,24 @@ export class Rect extends GeometryBase{
             Math.max(p1.x, p2.x),
             Math.max(p1.y, p2.y),
         );
+
+        return this;
+    }
+
+    multiply(pointOrFactor){
+        if (!(pointOrFactor instanceof Point)){
+            pointOrFactor = new Point(pointOrFactor, pointOrFactor);
+        }
+        this.p1.multiply(pointOrFactor);
+        this.p2.multiply(pointOrFactor);
+
+        return this;
+    }
+    add(point){
+        let newP2 = this.p2.copy().add(point);
+        this.set(this.p1, newP2);
+
+        console.log("n", this.p1, this.p2);
 
         return this;
     }
@@ -47,6 +69,7 @@ export class Rect extends GeometryBase{
     moveAt(value) {
         this.p1.add(value);
         this.p2.add(value);
+        return this;
     }
 
     getOverlappingRect(other) {
@@ -61,7 +84,7 @@ export class Rect extends GeometryBase{
     }
 
     getDimension() {
-        return this.p2.copy().substract(this.p1);
+        return this.p2.copy().subtract(this.p1);
     }
 
     copy() {
@@ -79,5 +102,21 @@ export class Rect extends GeometryBase{
     equals(other) {
         return this.p1.equals(other.p1)
             && this.p2.equals(other.p2);
+    }
+
+    getCenter() {
+        return this.p1.copy().add(this.p2.copy().subtract(this.p1).divide(2));
+    }
+
+    getPoints() {
+        return [this.p1.copy(), this.p1.copy().setX(this.p2.x), this.p2.copy(), this.p2.copy().setX(this.p1.x)];
+    }
+
+    getXDiff() {
+        return this.p2.x - this.p1.x;
+    }
+
+    getYDiff() {
+        return this.p2.y - this.p1.y;
     }
 }

@@ -107,7 +107,7 @@ class Point extends GeometryBase_1.GeometryBase {
         this.y = this._roundToPrecision(this.y + y);
         return this;
     }
-    substract(xOrPoint, y) {
+    subtract(xOrPoint, y) {
         if (xOrPoint instanceof Point) {
             y = xOrPoint.y;
             xOrPoint = xOrPoint.x;
@@ -116,14 +116,14 @@ class Point extends GeometryBase_1.GeometryBase {
         this.y = this._roundToPrecision(this.y - y);
         return this;
     }
-    substractX(x) {
+    subtractX(x) {
         if (x instanceof Point) {
             x = x.x;
         }
         this.x = this._roundToPrecision(this.x - x);
         return this;
     }
-    substractY(y) {
+    subtractY(y) {
         if (y instanceof Point) {
             y = y.y;
         }
@@ -151,6 +151,9 @@ class Point extends GeometryBase_1.GeometryBase {
         this.x = Math.abs(this.x);
         this.y = Math.abs(this.y);
         return this;
+    }
+    isNaN() {
+        return (isNaN(this.x) || isNaN(this.y));
     }
     smallerValuesThan(other) {
         return this.x < other.x && this.y < other.y;
@@ -205,7 +208,7 @@ class Point extends GeometryBase_1.GeometryBase {
             return false;
         }
         delta = Helper_1.Helper.nonNull(delta, 0);
-        let diff = this.copy().substract(other).abs();
+        let diff = this.copy().subtract(other).abs();
         return diff.getX() <= delta && diff.getY() <= delta;
         // return this.x === other.x && this.y === other.y;
     }
@@ -228,6 +231,23 @@ class Point extends GeometryBase_1.GeometryBase {
     }
     toArray() {
         return [this.x, this.y];
+    }
+    rotate(angle, rotationPoint) {
+        rotationPoint = Helper_1.Helper.nonNull(rotationPoint, new Point(0, 0));
+        this.subtract(rotationPoint);
+        this.transform(Math.cos(angle), -Math.sin(angle), 0, Math.sin(angle), Math.cos(angle), 0);
+        // let oldX = this.x;
+        //
+        // this.x = this.x *  - this.y * Math.sin(angle);
+        // this.y = oldX * Math.sin(angle) + this.y * Math.cos(angle);
+        this.add(rotationPoint);
+        return this;
+    }
+    transform(m11, m12, m13, m21, m22, m23) {
+        let xOld = this.x;
+        this.x = this._roundToPrecision(xOld * m11 + this.y * m12 + m13);
+        this.y = this._roundToPrecision(xOld * m21 + this.y * m22 + m23);
+        return this;
     }
     static singleFromArray(pointArray) {
         if (pointArray.length >= 2) {
@@ -272,7 +292,11 @@ class Point extends GeometryBase_1.GeometryBase {
     }
     static angleOf(p1, p2) {
         let scalarProduct = p1.copy().normalize().scalarProduct(p2.copy().normalize());
-        return Math.acos(Math.max(Math.min(scalarProduct, 1), -1));
+        let angle = Math.acos(Math.max(Math.min(scalarProduct, 1), -1));
+        if (p1.crossProduct(p2) > 0) {
+            angle = 2 * Math.PI - angle;
+        }
+        return angle;
     }
 }
 exports.Point = Point;

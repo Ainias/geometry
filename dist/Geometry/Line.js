@@ -10,15 +10,23 @@ class Line extends GeometryBase_1.GeometryBase {
         this.set(p1, p2);
     }
     length() {
-        return this.p1.copy().substract(this.p2).length();
+        return this.p1.copy().subtract(this.p2).length();
     }
     getGradient() {
         return this._round(this._gradient);
     }
+    multiply(pointOrFactor) {
+        this.p1.multiply(pointOrFactor);
+        this.p2.multiply(pointOrFactor);
+        return this;
+    }
+    copy() {
+        return new Line(this.p1.copy(), this.p2.copy(), this._precision);
+    }
     set(p1, p2) {
         this.p1 = Helper_1.Helper.nonNull(p1, this.p1);
         this.p2 = Helper_1.Helper.nonNull(p2, this.p2);
-        let diff = this.p2.copy().substract(this.p1);
+        let diff = this.p2.copy().subtract(this.p1);
         if (diff.x === 0) {
             this._gradient = Infinity;
         }
@@ -34,8 +42,8 @@ class Line extends GeometryBase_1.GeometryBase {
         if (p.equals(this.p1) || p.equals(this.p2)) {
             return true;
         }
-        let diff = p.copy().substract(this.p1);
-        let diffLine = this.p2.copy().substract(this.p1);
+        let diff = p.copy().subtract(this.p1);
+        let diffLine = this.p2.copy().subtract(this.p1);
         if (this._gradient === Infinity) {
             if (diff.x !== 0) {
                 return false;
@@ -44,7 +52,8 @@ class Line extends GeometryBase_1.GeometryBase {
         else if (this._gradient === 0) {
             return (diff.y === 0 && ((p.x >= this.p1.x && p.x <= this.p2.x) || (p.x <= this.p1.x && p.x >= this.p2.x)));
         }
-        else if (this._round(this.p1.y + diff.x * this._gradient) !== p.getY()) { //TODO hier sind eventuell rundungsfehler
+        else if (Math.abs(this.p1.y + diff.x * this._gradient - p.getY()) > 1.001 / Helper_1.Helper.nonNull(this._roundFactor, GeometryBase_1.GeometryBase.roundFactor)) { //TODO hier sind eventuell rundungsfehler
+            let x = 1 / Helper_1.Helper.nonNull(this._roundFactor, GeometryBase_1.GeometryBase.roundFactor);
             return false;
         }
         let diffY = diffLine.y;
@@ -53,7 +62,7 @@ class Line extends GeometryBase_1.GeometryBase {
     getIntersectionPointsWith(other) {
         let vector = this.getVector(); //r
         let otherVector = other.getVector(); //s
-        let diff = other.p1.copy().substract(this.p1); //(q-p)
+        let diff = other.p1.copy().subtract(this.p1); //(q-p)
         let diffCross1 = diff.crossProduct(otherVector); //(q-p) x s
         let diffCross2 = diff.crossProduct(vector); //(q-p) x r
         let vectorCross1 = vector.crossProduct(otherVector); //rxs
@@ -85,6 +94,10 @@ class Line extends GeometryBase_1.GeometryBase {
                     points.push(this.p2);
                 }
             }
+            //lies inside other
+            else if ((factorStart0 > 0) === (factorStart1 < 0)) {
+                points.push(this.p1, this.p2);
+            }
             return points;
         }
         else {
@@ -97,7 +110,7 @@ class Line extends GeometryBase_1.GeometryBase {
         return [];
     }
     getVector() {
-        return this.p2.copy().substract(this.p1);
+        return this.p2.copy().subtract(this.p1);
     }
     combine(other) {
         if (Math.abs(other._gradient) !== Math.abs(this._gradient)) {
@@ -126,6 +139,14 @@ class Line extends GeometryBase_1.GeometryBase {
     }
     getCenter() {
         return this.p1.copy().add(this.getVector().divide(2));
+    }
+    rotate(angle, point) {
+        if (Helper_1.Helper.isNull(point)) {
+            point = this.getCenter();
+        }
+        this.p1.rotate(angle, point);
+        this.p2.rotate(angle, point);
+        return this;
     }
     getOrthogonalVector() {
         let vector = this.getVector();
