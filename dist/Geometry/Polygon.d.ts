@@ -13,6 +13,7 @@ export declare class Polygon extends GeometryBase {
     union(...others: any[]): any;
     setminus(...others: any[]): any;
     intersection(...others: any[]): any[];
+    static fromJson(polygonJson: any): Polygon;
     static circle(center: any, radius: any, numPoints: any): Polygon;
     static arrayUnion(...polygons: any[]): any[];
     static rect(p1: any, p2: any): Polygon;

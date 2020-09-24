@@ -310,6 +310,24 @@ export class Point extends GeometryBase {
         return this;
     }
 
+    sign(){
+        let sign = new Point(0,0);
+        if (this.x < 0){
+            sign.x = -1;
+        }
+        else if (this.x > 0){
+            sign.x = 1;
+        }
+        if (this.y < 0){
+            sign.y = -1;
+        }
+        else if (this.y > 0){
+            sign.y = 1;
+        }
+
+        return sign;
+    }
+
     transform(m11, m12, m13, m21, m22, m23) {
         let xOld = this.x;
 
@@ -324,6 +342,10 @@ export class Point extends GeometryBase {
             return new Point(pointArray[0], pointArray[1]);
         }
         return null;
+    }
+
+    static fromJson(pointJson){
+        return new Point(pointJson.x, pointJson.y, pointJson._precision);
     }
 
     static fromArray(array) {

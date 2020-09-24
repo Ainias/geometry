@@ -243,6 +243,22 @@ class Point extends GeometryBase_1.GeometryBase {
         this.add(rotationPoint);
         return this;
     }
+    sign() {
+        let sign = new Point(0, 0);
+        if (this.x < 0) {
+            sign.x = -1;
+        }
+        else if (this.x > 0) {
+            sign.x = 1;
+        }
+        if (this.y < 0) {
+            sign.y = -1;
+        }
+        else if (this.y > 0) {
+            sign.y = 1;
+        }
+        return sign;
+    }
     transform(m11, m12, m13, m21, m22, m23) {
         let xOld = this.x;
         this.x = this._roundToPrecision(xOld * m11 + this.y * m12 + m13);
@@ -254,6 +270,9 @@ class Point extends GeometryBase_1.GeometryBase {
             return new Point(pointArray[0], pointArray[1]);
         }
         return null;
+    }
+    static fromJson(pointJson) {
+        return new Point(pointJson.x, pointJson.y, pointJson._precision);
     }
     static fromArray(array) {
         return array.map(pointArray => Point.singleFromArray(pointArray));

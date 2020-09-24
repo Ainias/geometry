@@ -527,6 +527,22 @@ export class Face extends GeometryBase {
     }
 
     static _removeInnerEdges(lines) {
+
+        for (let i = 0; i < lines.length; i++) {
+            let otherIndex = -1;
+            lines.some((l, index) => {
+                if (index > i && l.equals(new Line(lines[i].p2, lines[i].p1))) {
+                    otherIndex = index;
+                    return true;
+                }
+            });
+            if (otherIndex > i) {
+                lines.splice(otherIndex, 1);
+                lines.splice(i, 1);
+                i--;
+            }
+        }
+
         let newPoints = Face._glueLines(lines);
         //ignore others as only first is hull
         if (newPoints.length >= 1) {
@@ -646,5 +662,9 @@ export class Face extends GeometryBase {
         })
 
         return [new Face(...points), new Face(...pointsOther)];
+    }
+
+    static fromJson(faceJson) {
+        return new Face(...faceJson._points.map(p => Point.fromJson(p)));
     }
 }

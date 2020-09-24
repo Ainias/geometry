@@ -166,6 +166,9 @@ class Polygon extends GeometryBase_1.GeometryBase {
         });
         return newPolygons;
     }
+    static fromJson(polygonJson) {
+        return new Polygon(Face_1.Face.fromJson(polygonJson._face), polygonJson._holes.map(p => Polygon.fromJson(p)), polygonJson._precision);
+    }
     static circle(center, radius, numPoints) {
         return new Polygon(Face_1.Face.circle(center, radius, numPoints));
     }

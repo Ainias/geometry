@@ -113,7 +113,7 @@ class Line extends GeometryBase_1.GeometryBase {
         return this.p2.copy().subtract(this.p1);
     }
     combine(other) {
-        if (Math.abs(other._gradient) !== Math.abs(this._gradient)) {
+        if (other._gradient !== this._gradient) {
             return [this, other];
         }
         let intersectionPoints = this.getIntersectionPointsWith(other);
@@ -157,9 +157,17 @@ class Line extends GeometryBase_1.GeometryBase {
             return new Point_1.Point(0, 1);
         }
         else {
+            // debugger;
             let y = (vector.x / vector.y);
-            return new Point_1.Point(-1, y).normalize();
+            let res = new Point_1.Point(-1, y).normalize();
+            if (this._gradient === Infinity && (res.y !== 0 && res.y !== -0)) {
+                debugger;
+            }
+            return res;
         }
+    }
+    static fromJson(jsonLine) {
+        return new Line(Point_1.Point.fromJson(jsonLine.p1), Point_1.Point.fromJson(jsonLine.p2), jsonLine._precision);
     }
     static combineArrays(lines, linesOther) {
         let oldLines = linesOther;
@@ -178,6 +186,17 @@ class Line extends GeometryBase_1.GeometryBase {
             oldLines = newLines;
         });
         return oldLines;
+    }
+    static indexOf(lineArray, line, fromIndex, direction) {
+        let index = -1;
+        fromIndex = Helper_1.Helper.nonNull(fromIndex, 0);
+        lineArray.some((l, i) => {
+            if (i >= fromIndex && l.equals(line, direction)) {
+                index = i;
+                return true;
+            }
+        });
+        return index;
     }
 }
 exports.Line = Line;

@@ -45,8 +45,10 @@ export declare class Point extends GeometryBase {
     length(): number;
     toArray(): number[];
     rotate(angle: any, rotationPoint?: any): this;
+    sign(): Point;
     transform(m11: any, m12: any, m13: any, m21: any, m22: any, m23: any): this;
     static singleFromArray(pointArray: any): Point;
+    static fromJson(pointJson: any): Point;
     static fromArray(array: any): any;
     static toArray(points: any): any;
     static max(...points: any[]): Point;

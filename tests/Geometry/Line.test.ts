@@ -182,4 +182,12 @@ describe('line', () => {
         expect(line.p1).toEqual(new Point(15,5));
         expect(line.p2).toEqual(new Point(15,15));
     })
+
+    it("combine lines", () => {
+        let l1 = new Line(new Point(30,0), new Point(0,30));
+        let l2 = new Line(new Point(15,15), new Point(10,10));
+
+        let combinedLines = l1.combine(l2);
+        expect(combinedLines.length).toEqual(2);
+    })
 });

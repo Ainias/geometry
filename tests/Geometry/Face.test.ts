@@ -589,5 +589,12 @@ describe('face', () => {
         expect(face.containsPoint(lines[3].getCenter())).toBeTrue();
         expect(face.containsPoint(lines[4].getCenter())).toBeTrue();
     })
+
+    it("new Face", () => {
+        let face = new Face(new Point(0,0), new Point(10,0), new Point(10,10), new Point(10,5));
+
+        let points = face.getPoints();
+        expect(points.length).toEqual(3);
+    })
 });
 

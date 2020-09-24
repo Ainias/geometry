@@ -199,6 +199,10 @@ export class Polygon extends GeometryBase {
         return newPolygons;
     }
 
+    static fromJson(polygonJson){
+        return new Polygon(Face.fromJson(polygonJson._face), polygonJson._holes.map(p => Polygon.fromJson(p)), polygonJson._precision);
+    }
+
     static circle(center, radius, numPoints) {
         return new Polygon(Face.circle(center, radius, numPoints));
     }
