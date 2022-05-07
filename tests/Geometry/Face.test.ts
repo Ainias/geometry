@@ -1,7 +1,6 @@
 import {Point} from "../../src/Geometry/Point";
 import {Face} from "../../src/Geometry/Face";
 import {Line} from "../../src/Geometry/Line";
-import {Polygon} from "../../src/Geometry/Polygon";
 
 describe('face', () => {
     it('containsPoint 1', () => {
@@ -590,11 +589,34 @@ describe('face', () => {
         expect(face.containsPoint(lines[4].getCenter())).toBeTrue();
     })
 
+    it("containsPoint 3", () => {
+        const face = new Face(new Point(0,6), new Point(3.500038218713, 0.500063697855), new Point(6.499961781287, 5.499936302144));
+        const point = new Point(2,6);
+
+        expect(face.containsPoint(point)).toBeFalse();
+    })
+
     it("new Face", () => {
         let face = new Face(new Point(0,0), new Point(10,0), new Point(10,10), new Point(10,5));
 
         let points = face.getPoints();
         expect(points.length).toEqual(3);
+    });
+
+    it("getPointsInside", () => {
+        const face = new Face(new Point(585, -438), new Point(564, -471), new Point(593, -481), new Point(598, -474));
+        const pointsInside = face.getAllPointsInside();
+        const points593 = pointsInside.filter(p => p.x === 593);
+
+        expect(points593.length).toBeGreaterThan(5);
+    })
+
+    it("getPointsInside 2", () => {
+        const face = new Face(new Point(585, -438), new Point(564, -471), new Point(564, -481), new Point(585, -474));
+        const pointsInside = face.getAllPointsInside();
+        const notNaturalNumbers = pointsInside.filter(p => !p.equals(p.copy().round()));
+
+        expect(notNaturalNumbers).toEqual([]);
     })
 });
 

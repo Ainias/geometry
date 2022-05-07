@@ -7,7 +7,9 @@ const packageName = require("../package.json").name;
 let pathsToProjects = [
     // "/home/silas/Projekte/Web/project-echo",
     // "/home/silas/Projekte/Web/wordRotator",
+    "/home/silas/Projekte/web/bat",
     "/home/silas/Projekte/web/dnd",
+    "/home/silas/Projekte/web/hoffnungsfest",
     "/home/silas/Projekte/chrome/roll20Tweaks",
     // "/home/silas/Projekte/Web/crew",
     // "/home/silas/Projekte/Web/orgel",

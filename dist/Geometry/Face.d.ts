@@ -1,4 +1,5 @@
 import { Point } from "./Point";
+import { Line } from "./Line";
 import { GeometryBase } from "./GeometryBase";
 export declare class Face extends GeometryBase {
     static COLLISION_NONE: number;
@@ -10,7 +11,7 @@ export declare class Face extends GeometryBase {
     _points: any;
     constructor(...points: any[]);
     setPoints(points: any): void;
-    getLines(): any[];
+    getLines(): Line[];
     getPoints(): any;
     getLastPoint(): any;
     getAreaWithGaussscheDreiecksformel(): number;
@@ -20,6 +21,7 @@ export declare class Face extends GeometryBase {
     union(...others: any[]): any;
     setminus(...others: any[]): any[];
     intersection(...others: any[]): Face[];
+    getAllPointsInside(): any[];
     _getPointInside(): Point;
     checkCollision(otherFace: any): number;
     removeUnnecessaryPoints(): this;

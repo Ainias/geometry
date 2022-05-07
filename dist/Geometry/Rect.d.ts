@@ -21,4 +21,5 @@ export declare class Rect extends GeometryBase {
     getPoints(): Point[];
     getXDiff(): number;
     getYDiff(): number;
+    static fromJson(json: any): Rect;
 }

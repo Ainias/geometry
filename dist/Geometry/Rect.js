@@ -88,6 +88,9 @@ class Rect extends GeometryBase_1.GeometryBase {
     getYDiff() {
         return this.p2.y - this.p1.y;
     }
+    static fromJson(json) {
+        return new Rect(Point_1.Point.fromJson(json.p1), Point_1.Point.fromJson(json.p2));
+    }
 }
 exports.Rect = Rect;
 //# sourceMappingURL=Rect.js.map

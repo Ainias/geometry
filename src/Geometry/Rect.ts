@@ -119,4 +119,8 @@ export class Rect extends GeometryBase {
     getYDiff() {
         return this.p2.y - this.p1.y;
     }
+
+    static fromJson(json){
+        return new Rect(Point.fromJson(json.p1), Point.fromJson(json.p2));
+    }
 }

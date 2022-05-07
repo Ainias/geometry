@@ -18,6 +18,7 @@ export declare class Line extends GeometryBase {
     getCenter(): Point;
     rotate(angle: any, point?: any): this;
     getOrthogonalVector(): Point;
+    moveAt(pointOrX: any, y?: any): this;
     static fromJson(jsonLine: any): Line;
     static combineArrays(lines: any, linesOther: any): any;
     static indexOf(lineArray: any, line: any, fromIndex?: any, direction?: any): number;

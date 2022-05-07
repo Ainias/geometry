@@ -166,6 +166,11 @@ class Line extends GeometryBase_1.GeometryBase {
             return res;
         }
     }
+    moveAt(pointOrX, y) {
+        this.p1.add(pointOrX, y);
+        this.p2.add(pointOrX, y);
+        return this;
+    }
     static fromJson(jsonLine) {
         return new Line(Point_1.Point.fromJson(jsonLine.p1), Point_1.Point.fromJson(jsonLine.p2), jsonLine._precision);
     }

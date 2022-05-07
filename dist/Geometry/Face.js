@@ -98,6 +98,56 @@ class Face extends GeometryBase_1.GeometryBase {
         newFaces.push(new Face(...oldPoints));
         return newFaces;
     }
+    // containsPoint(point, withTouching?) {
+    //     if (this._points.length < 2 || Helper.isNull(point)) {
+    //         return false;
+    //     }
+    //
+    //     let min = Point.min(...this._points);
+    //     let max = Point.max(...this._points);
+    //
+    //     if (point.x < min.x || point.y < min.y || point.x > max.x || point.y > max.y) {
+    //         return false;
+    //     }
+    //     withTouching = Helper.nonNull(withTouching, true);
+    //
+    //     let line = new Line(new Point(min.x - 1, point.y), point);
+    //     let lines = this.getLines();
+    //
+    //     let count = 0;
+    //     for (let i = 0, n = lines.length; i < n; i++) {
+    //         let l = lines[i];
+    //         if (l.containsPoint(point)) {
+    //             return withTouching;
+    //         }
+    //         let newIntersectionPoints = line.getIntersectionPointsWith(l);
+    //         if (newIntersectionPoints.length === 1 && (newIntersectionPoints[0].equals(l.p1) || newIntersectionPoints[0].equals(l.p2))) {
+    //             if (newIntersectionPoints[0].equals(l.p1)) {
+    //                 continue;
+    //             }
+    //             let isAbove = l.p1.y < point.y;
+    //             for (let j = 1; j < n; j++) {
+    //                 let otherLine = lines[(i + j) % n];
+    //                 if (otherLine.p2.y !== point.y) {
+    //                     if (isAbove === otherLine.p2.y > point.y) {
+    //                         count++;
+    //                     }
+    //                     i += j;
+    //                     break;
+    //                 } else if (otherLine.containsPoint(point)) {
+    //                     return withTouching;
+    //                 } else if (otherLine.p2.x > point.x) {
+    //                     i += j;
+    //                     break;
+    //                 }
+    //             }
+    //
+    //         } else {
+    //             count += newIntersectionPoints.length;
+    //         }
+    //     }
+    //     return count % 2 === 1;
+    // }
     containsPoint(point, withTouching) {
         if (this._points.length < 2 || Helper_1.Helper.isNull(point)) {
             return false;
@@ -117,31 +167,13 @@ class Face extends GeometryBase_1.GeometryBase {
                 return withTouching;
             }
             let newIntersectionPoints = line.getIntersectionPointsWith(l);
-            if (newIntersectionPoints.length === 1 && (newIntersectionPoints[0].equals(l.p1) || newIntersectionPoints[0].equals(l.p2))) {
-                if (newIntersectionPoints[0].equals(l.p1)) {
-                    continue;
+            if (newIntersectionPoints.length > 0) {
+                if (l.p1.y > point.y) {
+                    count++;
                 }
-                let isAbove = l.p1.y < point.y;
-                for (let j = 1; j < n; j++) {
-                    let otherLine = lines[(i + j) % n];
-                    if (otherLine.p2.y !== point.y) {
-                        if (isAbove === otherLine.p2.y > point.y) {
-                            count++;
-                        }
-                        i += j;
-                        break;
-                    }
-                    else if (otherLine.containsPoint(point)) {
-                        return withTouching;
-                    }
-                    else if (otherLine.p2.x > point.x) {
-                        i += j;
-                        break;
-                    }
+                if (l.p2.y > point.y) {
+                    count++;
                 }
-            }
-            else {
-                count += newIntersectionPoints.length;
             }
         }
         return count % 2 === 1;
@@ -212,6 +244,47 @@ class Face extends GeometryBase_1.GeometryBase {
         });
         lines = lines.filter(l => allFaces.every(f => f.containsPoint(l.getCenter())));
         return Face._glueLines(lines).map(points => new Face(...points));
+    }
+    getAllPointsInside() {
+        const facePoints = this.getPoints();
+        const maxPoint = Point_1.Point.max(...facePoints).ceil();
+        const minPoint = Point_1.Point.min(...facePoints).floor();
+        const points = [];
+        // const lines = this.cutLines(this.getLines());
+        const lines = this.getLines();
+        for (let x = minPoint.x; x <= maxPoint.x; x++) {
+            const line = new Line_1.Line(new Point_1.Point(x, minPoint.y), new Point_1.Point(x, maxPoint.y));
+            let intersections = [];
+            lines.forEach(l => {
+                const lineIntersections = line.getIntersectionPointsWith(l);
+                intersections.push(...lineIntersections);
+                if (lineIntersections.length === 2) {
+                    const yMax = Math.max(lineIntersections[0].y, lineIntersections[1].y);
+                    for (let y = Math.ceil(Math.min(lineIntersections[0].y, lineIntersections[1].y)); y <= yMax; y++) {
+                        points.push(new Point_1.Point(x, y));
+                    }
+                }
+                else if (lineIntersections.length === 1) {
+                    if (lineIntersections[0].equals(lineIntersections[0].copy().round())) {
+                        points.push(lineIntersections[0]);
+                    }
+                }
+            });
+            intersections = intersections.sort((a, b) => a.y - b.y).filter((p, i) => i === 0 || p.y !== intersections[i - 1].y);
+            let previousIntersection = null;
+            intersections.forEach((intersection, i) => {
+                if (previousIntersection && intersection.y > previousIntersection.y) {
+                    const lineCenter = new Line_1.Line(intersection, previousIntersection).getCenter();
+                    if (this.containsPoint(lineCenter)) {
+                        for (let y = Math.floor(previousIntersection.y) + 1; y < intersection.y; y++) {
+                            points.push(new Point_1.Point(x, y));
+                        }
+                    }
+                }
+                previousIntersection = intersection;
+            });
+        }
+        return points;
     }
     _getPointInside() {
         let lines = this.getLines();
