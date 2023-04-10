@@ -1,6 +1,6 @@
-import {Helper} from "js-helper/dist/shared/Helper";
+import {Helper} from "@ainias42/js-helper";
 import {Face} from "./Face";
-import {Counter} from "js-helper/dist/shared/Counter";
+import {Counter} from "@ainias42/js-helper";
 import {GeometryBase} from "./GeometryBase";
 
 export class Polygon extends GeometryBase {

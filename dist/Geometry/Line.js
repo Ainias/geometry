@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Line = void 0;
-const Helper_1 = require("js-helper/dist/shared/Helper");
+const js_helper_1 = require("@ainias42/js-helper");
 const Point_1 = require("./Point");
 const GeometryBase_1 = require("./GeometryBase");
 class Line extends GeometryBase_1.GeometryBase {
@@ -24,8 +24,8 @@ class Line extends GeometryBase_1.GeometryBase {
         return new Line(this.p1.copy(), this.p2.copy(), this._precision);
     }
     set(p1, p2) {
-        this.p1 = Helper_1.Helper.nonNull(p1, this.p1);
-        this.p2 = Helper_1.Helper.nonNull(p2, this.p2);
+        this.p1 = js_helper_1.Helper.nonNull(p1, this.p1);
+        this.p2 = js_helper_1.Helper.nonNull(p2, this.p2);
         let diff = this.p2.copy().subtract(this.p1);
         if (diff.x === 0) {
             this._gradient = Infinity;
@@ -35,7 +35,7 @@ class Line extends GeometryBase_1.GeometryBase {
         }
     }
     equals(other, direction, delta) {
-        direction = Helper_1.Helper.nonNull(direction, true);
+        direction = js_helper_1.Helper.nonNull(direction, true);
         return (this.p1.equals(other.p1, delta) && this.p2.equals(other.p2, delta)) || (!direction && this.p1.equals(other.p2, delta) && this.p2.equals(other.p1, delta));
     }
     containsPoint(p) {
@@ -52,8 +52,8 @@ class Line extends GeometryBase_1.GeometryBase {
         else if (this._gradient === 0) {
             return (diff.y === 0 && ((p.x >= this.p1.x && p.x <= this.p2.x) || (p.x <= this.p1.x && p.x >= this.p2.x)));
         }
-        else if (Math.abs(this.p1.y + diff.x * this._gradient - p.getY()) > 1.001 / Helper_1.Helper.nonNull(this._roundFactor, GeometryBase_1.GeometryBase.roundFactor)) { //TODO hier sind eventuell rundungsfehler
-            let x = 1 / Helper_1.Helper.nonNull(this._roundFactor, GeometryBase_1.GeometryBase.roundFactor);
+        else if (Math.abs(this.p1.y + diff.x * this._gradient - p.getY()) > 1.001 / js_helper_1.Helper.nonNull(this._roundFactor, GeometryBase_1.GeometryBase.roundFactor)) { //TODO hier sind eventuell rundungsfehler
+            let x = 1 / js_helper_1.Helper.nonNull(this._roundFactor, GeometryBase_1.GeometryBase.roundFactor);
             return false;
         }
         let diffY = diffLine.y;
@@ -141,7 +141,7 @@ class Line extends GeometryBase_1.GeometryBase {
         return this.p1.copy().add(this.getVector().divide(2));
     }
     rotate(angle, point) {
-        if (Helper_1.Helper.isNull(point)) {
+        if (js_helper_1.Helper.isNull(point)) {
             point = this.getCenter();
         }
         this.p1.rotate(angle, point);
@@ -194,7 +194,7 @@ class Line extends GeometryBase_1.GeometryBase {
     }
     static indexOf(lineArray, line, fromIndex, direction) {
         let index = -1;
-        fromIndex = Helper_1.Helper.nonNull(fromIndex, 0);
+        fromIndex = js_helper_1.Helper.nonNull(fromIndex, 0);
         lineArray.some((l, i) => {
             if (i >= fromIndex && l.equals(line, direction)) {
                 index = i;

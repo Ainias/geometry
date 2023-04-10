@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Rect = void 0;
 const Point_1 = require("./Point");
-const Helper_1 = require("js-helper/dist/shared/Helper");
+const js_helper_1 = require("@ainias42/js-helper");
 const GeometryBase_1 = require("./GeometryBase");
 class Rect extends GeometryBase_1.GeometryBase {
     constructor(p1, p2, precision) {
@@ -15,8 +15,8 @@ class Rect extends GeometryBase_1.GeometryBase {
         return !(point.x < this.p1.x || point.y < this.p1.y || point.x > this.p2.x || point.y > this.p2.y);
     }
     set(p1, p2) {
-        p1 = Helper_1.Helper.nonNull(p1, this.p1);
-        p2 = Helper_1.Helper.nonNull(p2, this.p2);
+        p1 = js_helper_1.Helper.nonNull(p1, this.p1);
+        p2 = js_helper_1.Helper.nonNull(p2, this.p2);
         this.p1.set(Math.min(p1.x, p2.x), Math.min(p1.y, p2.y));
         this.p2.set(Math.max(p1.x, p2.x), Math.max(p1.y, p2.y));
         return this;

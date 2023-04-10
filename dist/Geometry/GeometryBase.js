@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GeometryBase = void 0;
-const Helper_1 = require("js-helper/dist/shared/Helper");
+const js_helper_1 = require("@ainias42/js-helper");
 class GeometryBase {
     // static roundFactor: number = 1;
     constructor(precision, _roundFactor) {
@@ -12,20 +12,20 @@ class GeometryBase {
         this._precision = precision;
     }
     _roundToPrecision(val, precision) {
-        precision = Helper_1.Helper.nonNull(precision, this._precision, GeometryBase.precision);
+        precision = js_helper_1.Helper.nonNull(precision, this._precision, GeometryBase.precision);
         return Math.round(val * precision) / precision;
     }
     _round(val) {
         // return this._roundToPrecision(val, Helper.nonNull(this._roundFactor, GeometryBase.roundFactor));
-        let precision = Helper_1.Helper.nonNull(this._roundFactor, GeometryBase.roundFactor);
+        let precision = js_helper_1.Helper.nonNull(this._roundFactor, GeometryBase.roundFactor);
         return Math.round(val * precision) / precision;
     }
     static round(val, precision) {
-        precision = Helper_1.Helper.nonNull(precision, GeometryBase.roundFactor);
+        precision = js_helper_1.Helper.nonNull(precision, GeometryBase.roundFactor);
         return Math.round(val * precision) / precision;
     }
     static roundToPrecision(val, precision) {
-        precision = Helper_1.Helper.nonNull(precision, GeometryBase.precision);
+        precision = js_helper_1.Helper.nonNull(precision, GeometryBase.precision);
         return Math.round(val * precision) / precision;
     }
 }

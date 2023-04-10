@@ -1,14 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Point = void 0;
-const Helper_1 = require("js-helper/dist/shared/Helper");
+const js_helper_1 = require("@ainias42/js-helper");
 const Rect_1 = require("./Rect");
 const GeometryBase_1 = require("./GeometryBase");
 class Point extends GeometryBase_1.GeometryBase {
     constructor(x, y, precision) {
         super(precision);
-        this.x = Helper_1.Helper.nonNull(this._roundToPrecision(x), 0);
-        this.y = Helper_1.Helper.nonNull(this._roundToPrecision(y), 0);
+        this.x = js_helper_1.Helper.nonNull(this._roundToPrecision(x), 0);
+        this.y = js_helper_1.Helper.nonNull(this._roundToPrecision(y), 0);
     }
     getX() {
         return this._round(this.x);
@@ -68,7 +68,7 @@ class Point extends GeometryBase_1.GeometryBase {
         return this._round(this.x * this.y);
     }
     round(onDecimal) {
-        onDecimal = Helper_1.Helper.nonNull(onDecimal, 0);
+        onDecimal = js_helper_1.Helper.nonNull(onDecimal, 0);
         let multiplier = Math.pow(10, onDecimal);
         this.x = Math.round(this.x * multiplier) / multiplier;
         this.y = Math.round(this.y * multiplier) / multiplier;
@@ -207,7 +207,7 @@ class Point extends GeometryBase_1.GeometryBase {
         if (!(other instanceof Point)) {
             return false;
         }
-        delta = Helper_1.Helper.nonNull(delta, 0);
+        delta = js_helper_1.Helper.nonNull(delta, 0);
         let diff = this.copy().subtract(other).abs();
         return diff.getX() <= delta && diff.getY() <= delta;
         // return this.x === other.x && this.y === other.y;
@@ -233,7 +233,7 @@ class Point extends GeometryBase_1.GeometryBase {
         return [this.x, this.y];
     }
     rotate(angle, rotationPoint) {
-        rotationPoint = Helper_1.Helper.nonNull(rotationPoint, new Point(0, 0));
+        rotationPoint = js_helper_1.Helper.nonNull(rotationPoint, new Point(0, 0));
         this.subtract(rotationPoint);
         this.transform(Math.cos(angle), -Math.sin(angle), 0, Math.sin(angle), Math.cos(angle), 0);
         // let oldX = this.x;
@@ -300,7 +300,7 @@ class Point extends GeometryBase_1.GeometryBase {
     }
     static indexOf(pointArray, point, fromIndex) {
         let index = -1;
-        fromIndex = Helper_1.Helper.nonNull(fromIndex, 0);
+        fromIndex = js_helper_1.Helper.nonNull(fromIndex, 0);
         pointArray.some((p, i) => {
             if (i >= fromIndex && p.equals(point)) {
                 index = i;

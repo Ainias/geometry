@@ -1,4 +1,4 @@
-import {Helper} from "js-helper/dist/shared/Helper";
+import {Helper} from "@ainias42/js-helper";
 
 export class GeometryBase {
     _precision: any;

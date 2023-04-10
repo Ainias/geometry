@@ -1,15 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Polygon = void 0;
-const Helper_1 = require("js-helper/dist/shared/Helper");
+const js_helper_1 = require("@ainias42/js-helper");
 const Face_1 = require("./Face");
-const Counter_1 = require("js-helper/dist/shared/Counter");
+const js_helper_2 = require("@ainias42/js-helper");
 const GeometryBase_1 = require("./GeometryBase");
 class Polygon extends GeometryBase_1.GeometryBase {
     constructor(face, holes, precision) {
         super(precision);
-        face = Helper_1.Helper.nonNull(face, []);
-        holes = Helper_1.Helper.nonNull(holes, []);
+        face = js_helper_1.Helper.nonNull(face, []);
+        holes = js_helper_1.Helper.nonNull(holes, []);
         if (face instanceof Array) {
             face = new Face_1.Face(...face);
         }
@@ -187,9 +187,9 @@ class Polygon extends GeometryBase_1.GeometryBase {
         return new Polygon([p1.copy(), p1.copy().setY(p2.y), p2.copy(), p1.copy().setX(p2.x)]);
     }
     __getSourceCode(index, parentArray) {
-        index = Helper_1.Helper.nonNull(index, 0);
-        if (!(index instanceof Counter_1.Counter)) {
-            index = new Counter_1.Counter(index);
+        index = js_helper_1.Helper.nonNull(index, 0);
+        if (!(index instanceof js_helper_2.Counter)) {
+            index = new js_helper_2.Counter(index);
         }
         let id = index.next();
         let name = "polygon" + id;

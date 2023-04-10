@@ -1,5 +1,5 @@
 import {Point} from "./Point";
-import {Helper} from "js-helper/dist/shared/Helper";
+import {Helper} from "@ainias42/js-helper";
 import {GeometryBase} from "./GeometryBase";
 
 export class Rect extends GeometryBase {

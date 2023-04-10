@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Face = void 0;
 const Point_1 = require("./Point");
-const Helper_1 = require("js-helper/dist/shared/Helper");
+const js_helper_1 = require("@ainias42/js-helper");
 const Line_1 = require("./Line");
 const GeometryBase_1 = require("./GeometryBase");
 class Face extends GeometryBase_1.GeometryBase {
@@ -149,7 +149,7 @@ class Face extends GeometryBase_1.GeometryBase {
     //     return count % 2 === 1;
     // }
     containsPoint(point, withTouching) {
-        if (this._points.length < 2 || Helper_1.Helper.isNull(point)) {
+        if (this._points.length < 2 || js_helper_1.Helper.isNull(point)) {
             return false;
         }
         let min = Point_1.Point.min(...this._points);
@@ -157,7 +157,7 @@ class Face extends GeometryBase_1.GeometryBase {
         if (point.x < min.x || point.y < min.y || point.x > max.x || point.y > max.y) {
             return false;
         }
-        withTouching = Helper_1.Helper.nonNull(withTouching, true);
+        withTouching = js_helper_1.Helper.nonNull(withTouching, true);
         let line = new Line_1.Line(new Point_1.Point(min.x - 1, point.y), point);
         let lines = this.getLines();
         let count = 0;
@@ -272,7 +272,7 @@ class Face extends GeometryBase_1.GeometryBase {
             });
             intersections = intersections.sort((a, b) => a.y - b.y).filter((p, i) => i === 0 || p.y !== intersections[i - 1].y);
             let previousIntersection = null;
-            intersections.forEach((intersection, i) => {
+            intersections.forEach((intersection) => {
                 if (previousIntersection && intersection.y > previousIntersection.y) {
                     const lineCenter = new Line_1.Line(intersection, previousIntersection).getCenter();
                     if (this.containsPoint(lineCenter)) {
@@ -365,7 +365,7 @@ class Face extends GeometryBase_1.GeometryBase {
             myLines.forEach((l2, i2) => {
                 let points = l1.getIntersectionPointsWith(l2);
                 points.forEach(p => {
-                    intersections[i] = Helper_1.Helper.nonNull(intersections[i], []);
+                    intersections[i] = js_helper_1.Helper.nonNull(intersections[i], []);
                     let intersectionObject = {
                         p: p,
                         i2: i2
@@ -406,8 +406,8 @@ class Face extends GeometryBase_1.GeometryBase {
         if (lines.length === 0) {
             return [];
         }
-        notInFace = Helper_1.Helper.nonNull(notInFace, new Face());
-        inFace = Helper_1.Helper.nonNull(inFace, null);
+        notInFace = js_helper_1.Helper.nonNull(notInFace, new Face());
+        inFace = js_helper_1.Helper.nonNull(inFace, null);
         let startingPoint = null;
         let reference = null;
         if (inFace) {
@@ -557,7 +557,7 @@ class Face extends GeometryBase_1.GeometryBase {
         }
     }
     static circle(center, radius, maxDistance) {
-        maxDistance = Math.max(Helper_1.Helper.nonNull(maxDistance, 5), 1);
+        maxDistance = Math.max(js_helper_1.Helper.nonNull(maxDistance, 5), 1);
         let numPoints = Math.ceil(2 * Math.PI * radius / maxDistance);
         if (numPoints % 2 === 0) {
             numPoints++;
@@ -585,8 +585,8 @@ class Face extends GeometryBase_1.GeometryBase {
             lines2.forEach((l2, i2) => {
                 let points = l1.getIntersectionPointsWith(l2);
                 points.forEach(p => {
-                    intersections1[i1] = Helper_1.Helper.nonNull(intersections1[i1], []);
-                    intersections2[i2] = Helper_1.Helper.nonNull(intersections2[i2], []);
+                    intersections1[i1] = js_helper_1.Helper.nonNull(intersections1[i1], []);
+                    intersections2[i2] = js_helper_1.Helper.nonNull(intersections2[i2], []);
                     let intersectionObject = {
                         i1: i1,
                         i2: i2,
